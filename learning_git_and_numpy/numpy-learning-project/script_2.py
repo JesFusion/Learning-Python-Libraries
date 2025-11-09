@@ -640,7 +640,7 @@ print(f'''
 
 {array_2}
 
-      
+
 ============================= Boolean Mask (values > 20 AND < 55) =============================
 
 {n_g_20_l_55}
@@ -974,13 +974,61 @@ Sine of Array: {np.sin(an_array)}
 
 
 
+# Columns: [ProductID, CategoryID, Price, Rating, Stock]
+# ProductID is the same as the row index
+products = np.array([
+    [0, 1, 59.99, 4.5, 50],   # Product 0
+    [1, 2, 120.50, 4.0, 10],  # Product 1
+    [2, 1, 25.00, 3.5, 200],  # Product 2
+    [3, 3, 750.00, 4.8, 5],   # Product 3
+    [4, 2, 29.99, 4.1, 150],  # Product 4
+    [5, 1, 42.75, 4.6, 20],   # Product 5
+    [6, 3, 1500.00, 4.9, 2],  # Product 6
+    [7, 2, 85.00, 3.8, 0],    # Product 7
+    [8, 1, 19.99, 3.0, 0],    # Product 8
+    [9, 3, 199.99, 4.7, 30]   # Product 9
+])
 
 
 
+sale_prices = (products[:, 2]) * (90 / 100)
+
+high_value_products = products[(products[:, 3] >= 4.5) & (products[:, 4] > 0)]
+
+urgent_action_products = products[(products[:, 4] <= 10) | (products[:, 4] > 0)]
+
+
+featured_products = products[[5, 1, 8]]
 
 
 
+print(f'''
+============================= Original Dataset =============================
 
+{products}
+
+
+============================= Sale Prices =============================
+
+{sale_prices}
+
+
+============================= High Value Products =============================
+
+{high_value_products}
+
+
+============================= Urgent Action Products =============================
+
+{urgent_action_products}
+
+
+============================= Featured Products =============================
+
+{featured_products}
+''')
+
+print(products > 50)
 
 
 
