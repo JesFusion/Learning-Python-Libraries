@@ -2,4 +2,35 @@
     1. np.random.rand() is for uniform distribution
 
     2. np.random.randn() is for normal distribution
+},
+
+{
+    "Here are the legacy methods for creating random NumPy arrays using the np.random. notation:"
+
+    np.random.rand(d0, d1, ...): generates an array of random floats from a uniform distribution over [0, 1), taking dimensions as separate arguments.
+    float_array = np.random.rand(3, 2)
+
+
+    np.random.random(size) generates an array of random floats from a uniform distribution over [0.0, 1.0), taking the shape as a tuple or int.
+    float_array_2 = np.random.random(size=(3, 2))
+
+
+    np.random.randn(d0, d1, ...) generates an array of random floats from a standard normal distribution (mean 0, stdev 1), taking dimensions as separate arguments.
+    normal_array = np.random.randn(3, 3)
+
+
+    np.random.randint(low, high, size) generates an array of random integers from low (inclusive) to high (exclusive).
+    int_array = np.random.randint(0, 10, size=(1, 5))
+
+
+    np.random.normal(loc, scale, size) generates an array of random floats from a normal distribution with specified mean (loc) and standard deviation (scale).
+    normal_array_2 = np.random.normal(loc=0.0, scale=1.0, size=(3, 3))
+
+
+    np.random.uniform(low, high, size) generates an array of random floats from a uniform distribution within a specified range [low, high).
+    uniform_array = np.random.uniform(5.0, 10.0, size=(2, 2))
+
+    
+    np.random.choice(a, size) generates a random sample from a given 1-D array or sequence a.
+    sample_array = np.random.choice(['apple', 'banana', 'cherry'], size=3)
 }
