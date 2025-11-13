@@ -3774,376 +3774,91 @@ I think .dt.weekday is good for training models (i'm not sure though, because th
 
 
 
+'''
+## Practicing Time-Based Indexing in Pandas
+'''
 
+# establishing a connection and extracting the dataset from the SQL database
+connect = sqlite3.connect(d_path)
 
+the_dataset = pd.read_sql(
+    "SELECT * FROM sales LIMIT 411",
 
+    connect
+)
 
 
 
+# let's view the original dataset...
+print(f'''
+============================= Original Dataset =============================
 
+{the_dataset.sample(6)}
 
+============================= Dataset Info =============================
+''')
 
+the_dataset.info()
 
 
+# we convert the 'Sale Date' column to a date_time object and assign it to a new column, 'sale_date', which will be used as the index
+the_dataset['sale_date'] = pd.to_datetime(the_dataset['Sale Date'])
 
+the_dataset = the_dataset.set_index('sale_date').drop(['Sale Date'], axis = 1) # 'Sale Date' was dropped
 
 
+print('''
+============================= DataFrame Info after Setting Date Index =============================
+''')
 
+the_dataset.info()
 
+# now, let's see how to slicing a dataframe using a Datetime index
+print(f'''
+============================= Slicing for the year 2000 =============================
 
+{the_dataset.loc['2000'].sample(5)}
 
 
+============================= Slicing for the year January 2006 =============================
 
+{the_dataset.loc['2006-01']}
 
 
+============================= Slicing for a specific day =============================
+{the_dataset.loc['2024-07-11']}
+''')
 
 
+# ============================= Practicing Timedelta (Time Differences) =============================
 
 
+# time delta is the difference between two points in time
 
+t_diff = the_dataset.index.max() - the_dataset.index.min()
 
 
+print(f'''
+      
+============================= Timedelta (Time Difference) =============================
 
+      
+============================= Time between oldest and latest sale =============================
+      
 
+{t_diff}
+''')
 
+# finding the duration between two points in Time
 
+duration = (the_dataset.index[0].date()) - (the_dataset.index[-1].date())
 
+print(f'''
+NOTE:
+The duration between the first sale ({the_dataset.index[-1].date()}) and last sale ({the_dataset.index[0].date()}) on the DataFrame is {duration}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+It's type is {type(duration)}
+''')
 
 
 
