@@ -1,69 +1,128 @@
-Part 2: Your Git Lesson (Module 2.4: Writing Good Commit Messages)
-(This is the lesson part. You'll apply this to your 02_employee_analysis.py file in Part 3).
+{
+    Part 2: Your Git Lesson (Module 2.4: Writing Good Commit Messages)
+    (This is the lesson part. You'll apply this to your 02_employee_analysis.py file in Part 3).
 
-This is a "soft skill" that will immediately make you look like a professional. When an ML hiring manager looks at your GitHub, this is one of the first things they see.
+    This is a "soft skill" that will immediately make you look like a professional. When an ML hiring manager looks at your GitHub, this is one of the first things they see.
 
-Why do good commit messages matter? Your commit history is a story. When you run git log, it's like reading the chapter titles of your project.
+    Why do good commit messages matter? Your commit history is a story. When you run git log, it's like reading the chapter titles of your project.
 
-Bad history: "code", "fixed stuff", "lol", "one more try"
+    Bad history: "code", "fixed stuff", "lol", "one more try"
 
-Good history: "Fix: Prevent crash when user inputs zero", "Feat: Add user authentication with JWT", "Docs: Update README with setup instructions"
+    Good history: "Fix: Prevent crash when user inputs zero", "Feat: Add user authentication with JWT", "Docs: Update README with setup instructions"
 
-A good history tells you why the code changed, making it 100x easier to find bugs or understand a project six months later.
+    A good history tells you why the code changed, making it 100x easier to find bugs or understand a project six months later.
 
-Here are the two golden rules:
+    Here are the two golden rules:
 
-Rule 1: The Imperative Mood
+    Rule 1: The Imperative Mood
 
-What it means: Write your commit message like you're giving a command or an instruction.
+    What it means: Write your commit message like you're giving a command or an instruction.
 
-Analogy: Think of a commit as a patch or a set of instructions to apply to the code. Your message is the title of that instruction set.
+    Analogy: Think of a commit as a patch or a set of instructions to apply to the code. Your message is the title of that instruction set.
 
-This patch will... "Fix login bug"
+    This patch will... "Fix login bug"
 
-This patch will... "Add groupby analysis"
+    This patch will... "Add groupby analysis"
 
-This patch will... "Update employee data"
+    This patch will... "Update employee data"
 
-The Test: Your commit message should complete this sentence: "If applied, this commit will..."
+    The Test: Your commit message should complete this sentence: "If applied, this commit will..."
 
-Examples:
+    Examples:
 
-YES: Fix: Correct the mean salary calculation
+    YES: Fix: Correct the mean salary calculation
 
-YES: Feat: Add new employee analysis script
+    YES: Feat: Add new employee analysis script
 
-NO: Fixed the calculation
+    NO: Fixed the calculation
 
-NO: Added a new script
+    NO: Added a new script
 
-Rule 2: The "50/72" Rule (The Format) This rule governs the length of your commit message for maximum readability in terminals.
+    Rule 2: The "50/72" Rule (The Format) This rule governs the length of your commit message for maximum readability in terminals.
 
-The Subject Line (The 50):
+    The Subject Line (The 50):
 
-Keep your subject line (the part after -m "...") under 50 characters.
+    Keep your subject line (the part after -m "...") under 50 characters.
 
-This is because git log --oneline cuts off after ~50 characters. You want your entire message to be visible.
+    This is because git log --oneline cuts off after ~50 characters. You want your entire message to be visible.
 
-It should be a short summary.
+    It should be a short summary.
 
-Pro-tip: Many pros start this with a "type" tag like:
-- Feat:
-- Fix:
-- Docs:
-- Style:
-- Refactor:
+    Pro-tip: Many pros start this with a "type" tag like:
+    - Feat:
+    - Fix:
+    - Docs:
+    - Style:
+    - Refactor:
 
-The Body (The 72):
+    The Body (The 72):
 
-If your change is too complex for 50 characters, you can add a body.
+    If your change is too complex for 50 characters, you can add a body.
 
-To do this, just type git commit (with no -m). This will open a terminal text editor (like Vim or Nano).
+    To do this, just type git commit (with no -m). This will open a terminal text editor (like Vim or Nano).
 
-You write your < 50 char subject>, then leave a blank line, then write a more detailed explanation, making sure to wrap each line at 72 characters.
+    You write your < 50 char subject>, then leave a blank line, then write a more detailed explanation, making sure to wrap each line at 72 characters.
 
-For now, just stick to the -m "..." and the 50-character rule. It's all you need.
+    For now, just stick to the -m "..." and the 50-character rule. It's all you need.
 
-Bad Commit Message: git commit -m "wrote some code for the new assignment and also i used groupby" (Too long, not imperative, vague)
+    Bad Commit Message: git commit -m "wrote some code for the new assignment and also i used groupby" (Too long, not imperative, vague)
 
-Good Commit Message: git commit -m "Feat: Add employee analysis script with groupby" (Imperative, <50 chars, clear, has a "type" tag)
+    Good Commit Message: git commit -m "Feat: Add employee analysis script with groupby" (Imperative, <50 chars, clear, has a "type" tag)
+},
+
+{
+    "Standard Type Prefixes (Conventional Commits):"
+
+    feat: Used when adding a new feature to the codebase. This is a major change.
+    Example: feat: Add user authentication module
+    Example: feat: Implement dark mode toggle
+
+
+    fix: Used when patching a bug in the codebase.
+    Example: fix: Correct login button alignment issue on mobile
+    Example: fix: Resolve infinite loop in data processing function
+
+
+    docs: Used when making documentation-only changes (e.g., README, comments, JSDoc).
+    Example: docs: Update README with installation instructions
+    Example: docs: Fix typo in API usage guide
+
+
+    style: Used when making changes that do not affect the meaning of the code (whitespace, formatting, missing semicolons, etc.).
+    Example: style: Format code to adhere to PEP8 guidelines
+    Example: style: Remove extra whitespace at end of file
+
+
+    refactor: Used when making changes that neither fix a bug nor add a feature, but restructure existing code (e.g., renaming a variable, moving a file, improving structure).
+    Example: refactor: Rename 'user_logic' folder to 'authentication'
+    Example: refactor: Extract helper function for data validation
+
+
+    test: Used when adding missing tests or correcting existing tests.
+    Example: test: Add unit tests for new API endpoint
+    Example: test: Update existing test suite to cover edge cases
+
+
+    chore: Used for routine maintenance tasks that don't directly relate to production code or tests (e.g., updating build tasks, configuration changes, package updates).
+    Example: chore: Update numpy version in requirements.txt
+    Example: chore: Configure CI/CD pipeline settings
+
+
+    perf: Used when making code changes that improve performance.
+    Example: perf: Optimize database query for faster results
+    Example: perf: Improve rendering speed of dashboard graphs
+
+
+    ci: Used for changes to continuous integration and continuous deployment configuration files and scripts.
+    Example: ci: Add GitHub Actions workflow for automated testing
+    Example: ci: Configure Docker container build process
+
+
+    build: Used for changes that affect the build system or external dependencies (e.g., scopes, yarn, npm, gulp, webpack).
+    Example: build: Update webpack configuration
+    Example: build: Fix package lock file conflicts
+
+    
+    revert: Used when reverting a previous commit.
+    Example: revert: Revert "feat: Add experimental feature X"
+}
