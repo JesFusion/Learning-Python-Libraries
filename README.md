@@ -44,6 +44,10 @@ pip install -r requirements.txt
 
 ## File highlights and short descriptions
 
+- Most directories contain one or more of the following files: `script_1.{file extension}`, `script_2.{file extension}`, or `Gemini_Code.{file extension}`. These files serve distinct purposes within the learning workflow:
+  - `Gemini_Code`: Stores the code provided for instructional purposes.
+  - `script_1`: Used for practicing the concepts currently being taught.
+  - `script_2`: Serves as a comprehensive repository for all demonstrated code, optimized for future reference.
 - `learning_git_and_numpy/numpy-learning-project/01_first_array.py` — Intro to creating NumPy arrays.
 - `.../09_image_processor.py` — Simple image-processing code demonstrating array shapes and indexing.
 - `SQL_and_pandas/database_generator/build_database.py` — Generates SQL table creation and sample-data insert files (useful to seed a test database).
