@@ -26,6 +26,17 @@
     >= (Greater than or equal to)
 
     <= (Less than or equal to)
-}
+},
 
+{
+    "Any column in your SELECT list that is NOT an aggregate function (SUM, AVG, COUNT...) MUST be listed in your GROUP BY clause."
+
+    Why? Think about it. If you ask for SELECT Store, Product, SUM(Sales) ... GROUP BY Store... The query is trying to return one row for 'Store_A' with one SUM (e.g., $10,000). But 'Store_A' has 5 different products ('Apples', 'Oranges', etc.). The database gets confused. It can't show you one row for 'Store_A' and five different product names.
+
+    The Fix: If you want to see Store and Product, you must tell the database to group by both: GROUP BY Store, Product. This will give you the SUM for (Store_A, Apples), (Store_A, Oranges), etc.
+},
+
+{
+    Rule: NEVER use f-strings or + to put user variables in a SQL query. ALWAYS use "params = "
+}
 
