@@ -3787,7 +3787,7 @@ the_dataset = pd.read_sql(
     connect
 )
 
-
+connect.close()
 
 # let's view the original dataset...
 print(f'''
@@ -3900,6 +3900,110 @@ It's type is {type(duration)}
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+print('Connecting to DataBase...')
+time.sleep(2)
+
+# establishing a connection to the database and extracting the dataset
+connection = sqlite3.connect(d_path)
+
+dataset = pd.read_sql(
+    "SELECT * FROM sales LIMIT 395",
+
+    connection
+)
+
+connection.close() # close the connection
+
+dataset['Sale Date'] = pd.to_datetime(dataset["Sale Date"])
+
+# i want to drop duplicate values since i'll be using it as my index to prevent future errors
+dataset = dataset.drop_duplicates(subset = ["Sale Date"], keep = "last").set_index("Sale Date")
+
+print(f'''
+============================= Original Daily Sales Data =============================
+
+{dataset.sample(6)}
+''')
+
+# let's find the total sales for each 7 day period
+
+print(f'''
+============================= Downsampled to 7-day sums =============================
+
+{dataset['Sales'].resample("7D").sum().sample(6)}
+''')
+
+# find the average sales for each 4-day period
+
+print(f'''
+============================= Downsampled to 4-day averages =============================
+
+{dataset['Sales'].resample("4D").mean().sample(6)}
+''')
+
+# unsampling from daily to 12-hour periods
+# .asfreq() leaves NaNs
+print(f'''
+============================= Unsampling to 12-Hour Sums =============================
+
+{dataset['Sales'].resample('12h').asfreq().sample(6)}
+''')
+
+
+# fill the NaNs using "forward fill" (ffill)
+
+print(f'''
+============================= Unsampled to 12-Hour (Forward Filled) =============================
+
+{dataset["Sales"].resample('12h').ffill().sample(6)}
+''')
+
+# practicing rolling windows
+
+magma = dataset.copy() # copying this dataset, i wanna use it later
+
+dataset['3 Day Moving Avg.'] = dataset['Sales'].rolling(window = 3).mean().round(2) # we add a new column called "3 Day Moving Avg." and in it we place the average of the sale for a row and it's 2 preceeding rows
+
+print(f'''
+============================= Original Data with 3-day Rolling Average Column =============================
+
+{dataset.head(6)}
+''')
+
+
+magma["Rolling_Sum"] = magma["Sales"].rolling(window = 7).sum().round(2) # the "Rolling_Sum" column in magma finds the sum of the "Sales" column in a row and the preceeding 6 rows before it. But for the first 6 rows, they don't have a complete preceeding 6 rows, so pandas just fills them with NaNs
+
+
+# i removed the first 6 rows with NaNs in the "Rolling_Sum" column, but if you wanna see what it looks like, remove the .iloc[7:] below
+print(f'''
+
+============================= Rolling Sum for 7-days =============================
+
+{magma.iloc[7:].head(6)}
+''')
 
 
 
