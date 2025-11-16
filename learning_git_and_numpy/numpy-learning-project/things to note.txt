@@ -97,8 +97,100 @@
     ```
 },
 
+
+{
+    There are 3 simple BroadCasting rules. NumPy compares the shapes of your two arrays (e.g., A and B) from right to left.
+
+    - Rule 1: Align shapes from the right.
+
+    A: (4, 3, 2)
+
+    B: ( , 3, 2) (If B's shape is (3, 2))
+
+    A: (4, 3, 2)
+
+    B: ( , 2) (If B's shape is (2,))
+
+    
+    
+    
+    - Rule 2: Check if dimensions are compatible.
+
+    Starting from the right, each pair of dimensions must be compatible. A pair is "compatible" if:
+
+    The dimensions are equal (e.g., 2 vs 2), OR
+
+    One of the dimensions is 1.
+
+    
+    
+    
+    - Rule 3: "Stretch" (broadcast) the dimension of size 1.
+
+    If a pair is compatible because one of them is 1, NumPy "stretches" that 1 to match the other dimension.
+
+
+
+
+    `Examples:`
+    - Example 1: Success (The "Paint Roller") A (3, 3) + B (3, 1)
+
+    Align: A: (3, 3) B: (3, 1)
+
+    Check (Right-to-Left):
+
+    3 vs 1: Compatible! (Rule 2)
+
+    3 vs 3: Compatible! (Rule 2)
+
+    Stretch:
+
+    NumPy stretches B's shape from (3, 1) to (3, 3).
+
+    Result: SUCCESS! (This is our "smart paint roller" from last lesson).
+
+    
+
+    
+    - Example 2: Success (The "Row Vector") A (3, 3) + B (3,)
+
+    Align: A: (3, 3) B: ( , 3)
+
+    Check (Right-to-Left):
+
+    3 vs 3: Compatible! (Rule 2)
+
+    3 vs (empty): Compatible! (NumPy treats "empty" as 1. This is Rule 2).
+
+    Stretch:
+
+    NumPy first promotes B's shape to (1, 3).
+
+    It then stretches this (1, 3) shape to (3, 3).
+
+    Result: SUCCESS! (This is our "row vector" add from last lesson).
+
+    
+    
+    
+    
+    - Example 3: FAILURE (The "Why it breaks") A (3, 4) + B (3,)
+
+    Align: A: (3, 4) B: ( , 3)
+
+    Check (Right-to-Left):
+
+    4 vs 3: INCOMPATIBLE! (They are not equal, and neither is 1).
+
+    Result: ERROR! ValueError: operands could not be broadcast together with shapes (3,4) (3,)
+}
+
 {
     samples = rows
 
     features = columns
-}
+},
+
+{
+    NEVER, EVER, EVER use "git reset --hard" on a branch that you have pushed and shared with a team (like main). If you do, you're "burning" pages that your teammates might have!
+},
