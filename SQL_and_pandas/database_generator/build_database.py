@@ -9,7 +9,6 @@ from jesse_custom_code.pandas_file import database_path as d_path
 
 
 # This path needs to be set to your actual database file path
-# I'm using a local name, but you can change this back to d_path
 DB_FILE = d_path
 
 # --- Helper Functions (No Changes) ---
