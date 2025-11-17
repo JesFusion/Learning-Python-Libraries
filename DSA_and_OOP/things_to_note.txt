@@ -1,0 +1,10 @@
+{
+    object = instance (meaning creating a new thing using existing parts. Like collecting LEGO bricks to create a toy)
+
+    
+    Benefits of Object-Oriented Programming (OOP):
+    1. Maintainable: All the logic for a User is in ONE place.
+    2. Reusable: We can create 10 million User objects from this
+    one class, and they all work.
+    3. Scalable: No more global variables or "spaghetti code."
+}
