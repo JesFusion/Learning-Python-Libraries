@@ -69,16 +69,14 @@ pip install -r requirements.txt
 
 This folder appears to be personal learning material. If you want to publish or share it, add a LICENSE file (MIT/Apache/BSD as appropriate) and ensure any third-party code snippets include attributions.
 
-## Contact / Notes
+## Contact Me
 
-If you want, I can:
-
-- Add a `requirements.txt` with pinned versions.
-- Convert one example (`09_image_processor.py`) into a small notebook with inline explanation and runnable cells.
-- Add the per-subfolder README files mentioned above.
+- **Phone Number:** +234 9133982877
+- **Whatsapp:** [Link to my Whatsapp](https://wa.link/t8b9hv)
+- **Email:** jesfusionprox@gmail.com
 
 ---
 
-Published on 2025-11-12 — updated to provide a clear overview and suggested follow-ups.
+This README was last edited on 2025-11-17
 
 <!-- TODO: Proof-Read this Markdown content-->
