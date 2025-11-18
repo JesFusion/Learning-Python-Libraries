@@ -277,3 +277,210 @@ Small list time duration: {s_t_e - s_t_s}
 Large list time duration: {l_t_e - s_t_e}
 ''') # notice that the larger list took a longer time to go through it entirely. It may be a fraction of a second, but when handling large databases, it'll take longer than that
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Examining the speed difference between different Big O Notations
+
+
+
+# ============================= O(1) - Constant Time =============================
+
+# in constant Time, the run time is always the same, regardless of the input size
+
+def ex_first_item(the_list: list): # ex for extract
+
+    return the_list[0]
+
+
+
+# ============================= O(n) - Linear Time =============================
+
+# in Linear Time, the run-time grows linearly with the input size
+
+def list_search_linear(the_list: list, the_item):
+
+    no_steps = 0
+
+    for an_item in the_list:
+
+        no_steps += 1
+
+        if an_item == the_item:
+
+            return True, no_steps
+        
+    return False, no_steps
+
+
+
+
+# ============================= O(n^2) - Quadratic Time =============================
+
+# in Quadratic time, the run-time is the square of the input-size (input-size^2)
+# if n = 5, t = 25 (5 ^ 2)
+
+def element_match(the_list: list):
+
+    no_of_steps = 0
+
+    no_of_elements = len(the_list)
+
+    # the outer loop runs with the input size number
+
+    for x in range(no_of_elements):
+
+        # the inner loop runs with the input size number for each run in the outer loop
+
+        for y in range(no_of_elements):
+
+            no_of_steps += 1
+
+    return no_of_steps
+
+
+
+
+# ============================= O(2^n) - Exponential Time =============================
+
+# in exponential time, the run-time doubles with the addition of a new element. You might wanna avoid this notation when your input size is large
+
+def fibonacci_recursive(input_size):
+
+    if input_size <= 1:
+
+        return input_size
+
+    return fibonacci_recursive(input_size - 1) + fibonacci_recursive(input_size - 2)
+
+
+
+
+# ============================= running each function =============================
+
+
+small_list = [9, 0, "Jesse", None]
+
+large_list = list(range(1000000))
+
+time_1 = time.time()
+
+f_small = ex_first_item(small_list)
+
+
+
+
+time_2 = time.time()
+
+print(f"First item from large list: {f_small}\nTime: {time_2 - time_1}")
+
+f_large = ex_first_item(large_list)
+
+
+
+
+time_3 = time.time()
+
+print(f"\nFirst item from small list: {f_large}\nTime: {time_3 - time_2}")
+
+
+the_steps = element_match(small_list)
+
+
+
+
+time_4 = time.time()
+
+print(f"\nO(n^2) steps  for small list: {the_steps}\nTime: {time_4 - time_3}")
+
+
+
+l_steps = element_match(list(range(1000)))
+
+time_5 = time.time()
+
+
+print(f"\nO(n^2) steps  for large list: {l_steps}\nTime: {time_5 - time_4}") # notice that it's larger than that for the small list
+
+
+s_fibo = fibonacci_recursive(10)
+
+time_6 = time.time()
+
+l_fibo = fibonacci_recursive(30)
+
+time_7 = time.time()
+
+print(f'''
+Fibonacci result for small value: {s_fibo}
+Time: {time_6 - time_5}
+
+
+Fibonacci result for large value: {l_fibo}
+Time: {time_7 - time_6}
+''') # notice the astronomical difference between the time for the small and the large value
