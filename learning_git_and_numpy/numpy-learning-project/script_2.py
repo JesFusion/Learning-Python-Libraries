@@ -1,5 +1,8 @@
 import numpy as np
 import time
+import pandas as pd
+from jesse_custom_code.pandas_file import database_path as d_path
+from sqlalchemy import create_engine
 
 a_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -1072,38 +1075,66 @@ print(products > 50)
 
 
 
+np.random.seed(19)
 
+# ============================= operations with 1 array (broadcasting) =============================
 
+array_1 = np.arange(33, 47).reshape(7, 2)
 
+print(f'''
+============================= Original Array (array_1) =============================
 
+{array_1}
 
 
+============================= array_1 + 89 =============================
 
+{array_1 + 89}
 
 
+============================= array_1 * -0.81 =============================
 
+{array_1 * -0.81}
 
 
+============================= array_1 to the power of 1.73 =============================
 
+{(array_1 ** 1.73).round(2)}
+''')
 
 
+# ============================= operations with 2 arrays =============================
 
+array_2 = np.linspace(0.03, 1.23, 15).reshape(3, 5).round(2)
 
+print(f'''
+============================= Original Array (array_2) =============================
 
+{array_2}
 
 
+============================= array_1 + array_2 (Element-wise) =============================
+''')
 
 
 
+array_2 = array_2.flatten()[:-1].reshape(7, 2)
 
 
 
+print(f'''
+{array_1 + array_2}
 
 
+============================= array_1 * array_2 (Element-wise) =============================
 
+{array_1 * array_2}
 
 
+============================= array_1 / array_2 (Element-wise) =============================
 
+{(array_1 / array_2).round(2)}
+''')
 
 
 
@@ -1145,48 +1176,116 @@ print(products > 50)
 
 
 
+a_array = np.linspace(-10, 11, 20).round(2)
 
+print(f'''
+============================= Original Array =============================
+      
+{a_array}
 
 
+============================= Abslute Value of a_array =============================
 
+{np.abs(a_array)}
 
 
+============================= Square Root of a_array =============================
 
+{np.sqrt(a_array)}
+''')
+# Notice that numpy places nan where the element was a negative number
 
+# let's make everything positive by using the absolut function
 
+print(f'''
+============================= Square Root of Absolute a_array =============================
 
+{np.sqrt(np.abs(a_array)).round(2)}
+''')
 
 
+# ============================= let's practice on Exponential and Logarithm Universal Functions (UFuncs) =============================
 
 
+b_array = np.linspace(1, 9, 23).round(2)
 
+print(f'''
+============================= Original Array =============================
 
+{b_array}
+''')
 
+# np.exp() for finding the exponential of each element; very useful for an Ml engineer. It is also used in the "softmax" activation function
 
+print(f'''
+============================= Exponential of b_array =============================
 
+{np.exp(b_array).round(2)}
+''')
 
+# np.log() is used in "log loss"/cross-entropy
 
+print(f'''
+============================= Natural Log of b_array =============================
 
+{np.log(b_array).round(2)}
+''')
 
+# let's check if we'll get back the array by finding the logarithm of it's exponential
 
+print(f'''
+============================= Logarithm of Exponential of b_array =============================
 
+{np.log(np.exp(b_array))}
+''') # check out that it worked!
 
 
 
+# ============================= How to Round UFuncs =============================
 
+c_array = np.linspace(10, 13, 27)
 
+print(f'''
+============================= Original Array =============================
 
+{c_array}
+''')
 
+# np.floor() rounds down
+# e.g:
+# np.floor(4.1) = 4
+# np.floor(3.7) = 3
 
+print(f'''
+============================= Foor of c_array =============================
+      
+{np.floor(c_array)}
+''')
 
 
+# np.ceil() rounds up
+# e.g:
+# np.floor(4.1) = 5
+# np.floor(3.7) = 4
 
+print(f'''
+============================= Ceiling of c_array =============================
+      
+{np.ceil(c_array)}
+''')
 
+# np.round() rounds normally
 
+print(f'''
+============================= Round of c_array =============================
 
+{np.round(c_array)}
 
 
+============================= Rounding to 2 decimal places =============================
 
+{np.round(c_array, 2)}
+''')
 
 
 
@@ -1217,6 +1316,643 @@ print(products > 50)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+np.random.seed(19)
+
+array_a = np.random.randint(32, 54, size = (3, 4))
+
+broadcast_scalar = 0.41
+
+array_b = array_a + broadcast_scalar # the scalar is broadcasted across the matrix, like spraying paint on a wall
+
+print(f'''
+============================= BroadCasting a Scalar =============================
+
+      
+============================= Original Array (array_a) =============================
+      
+{array_a}
+
+Shape: {array_a.shape}
+
+
+============================= BroadCasting 0.41 to array_a =============================
+
+{array_b}
+
+Shape: {array_b.shape}
+''')
+
+
+# ============================= Broadcasting 1D array to 2D array =============================
+
+array_c = np.linspace(3, 4, 9).reshape(3, 3).round(2)
+
+array_d = np.linspace(4, 8, 3)
+
+print(f'''
+============================= BroadCasting a 1D Row Vector on a Matrix =============================
+
+============================= Original Matrix (Shape: {array_c.shape}) =============================
+
+{array_c}
+
+
+============================= Original Vector (Shape: {array_d.shape}) =============================
+
+{array_d}
+
+
+============================= array_c + array_d (Shape: {(array_c + array_d).shape}) =============================
+
+{array_c + array_d} 
+''')
+
+# ============================= Broadcasting a 2D Column Vector to a 2d array =============================
+
+# np.arange() creates an array of vales from a start to a stop
+array_e = np.arange(1, 4).reshape(3, 1)
+
+
+# np.linspace() creates an array with a number of specified elements between a start and a stop
+
+array_f = np.linspace(1, 9, 9).reshape(3, 3)
+
+print(f'''
+============================= Broadcasting a 2d column vector (Matrix + Vector) =============================
+
+============================= Original Vector (Shape: {array_e.shape}) =============================
+
+{array_e}
+
+
+============================= Original Matrix (Shape: {array_f.shape}) =============================
+
+{array_f}
+
+
+============================= array_e + array_f =============================
+
+{array_e + array_f}
+
+Shape: {(array_e + array_f).shape}
+''')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+np.random.seed(19) # jesse is 19 years old
+
+array_a = np.random.rand(3, 5).round(2)
+
+print(f'''
+============================= Original array_a =============================
+
+{array_a}
+
+============================= array_a * 5.1 =============================
+
+{(array_a * 5.1).round(2)}
+
+
+============================= array_a / 0.119 =============================
+
+{(array_a / 0.119).round(2)}
+
+
+============================= array_a + 3.9 =============================
+
+{(array_a + 3.9)}
+
+
+============================= array_a - 0.14 =============================
+
+{array_a - 0.14}
+
+
+============================= Square Root of array_a =============================
+
+{np.sqrt(array_a)}
+
+
+============================= Exponential of array_a =============================
+
+{np.exp(array_a)}
+
+
+============================= Natural Log of array_a =============================
+
+{np.log(array_a)}
+
+
+============================= Ceil of array_a =============================
+
+{np.ceil(array_a * 10.5134)}
+
+
+============================= Floor of array_a =============================
+
+{np.floor(array_a * 15.2571)}
+''')
+
+
+# ============================= BroadCasting =============================
+
+d1_array = np.linspace(3, 4, 5)
+
+d2_array = np.random.randint(1, 25, size = (5, 5))
+
+print(f'''
+============================= BroadCasting =============================
+      
+
+d1_array: {d1_array}
+
+Shape: {d1_array.shape}
+
+d2_array:
+{d2_array}
+
+Shape: {d2_array.shape}
+
+BroadCasting d1_array to d2_array, we have:
+
+{d2_array + d1_array}
+''')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+np.random.seed(19)
+np.set_printoptions(suppress = True)
+
+
+# extracting our dataset from an SQL database with sqlalchemy...
+
+the_engine = create_engine(f"sqlite:///{d_path}")
+
+
+# the features we'll be making use of for this practice is the Age, Salary and Children features
+
+the_dataset = pd.read_sql(
+    '''
+    SELECT Age, Salary, Children
+    FROM Employees
+    LIMIT 967
+    ''',
+
+    the_engine
+)
+
+
+print(f'''
+============================= Original Dataset =============================
+
+{the_dataset.head().to_markdown()}
+''')
+
+
+# converting the dataframe to a numpy array for processing 
+
+the_dataset = the_dataset.to_numpy()
+
+
+print(f'''
+============================= DataFrame converted to Numpy array =============================
+
+{the_dataset[:6]}
+
+Shape: {the_dataset.shape}
+''')
+
+# let's broadcast the "age" column by adding a scalar
+
+the_dataset[:, 2] = the_dataset[:, 2] + 1901.34
+
+
+print(f'''
+============================= Numpy array after Broadcasting the 3rd column =============================
+
+{the_dataset[:6]}
+
+Shape: {the_dataset.shape}
+''')
+
+
+# finding the mean and standard deviation of each feature. the result will be a row where each column contains the mean or standard deviation of each column in the array
+
+
+
+features_mean = the_dataset.mean(axis = 0)
+
+features_std = the_dataset.std(axis = 0)
+
+print(f'''
+============================= Parameters =============================
+
+Mean of each feature: {features_mean}
+
+Shape: {features_mean.shape}
+
+Standard Deviation of each feature: {features_std}
+
+Shape: {features_std.shape}
+''')
+
+# now let's practice broadcasting
+# we'll normalize the dataset by subracting the mean and dividing by the standard deviation
+
+NM_dataset = (the_dataset - features_mean) / features_std
+
+
+print(f'''
+============================= Normalized Dataset =============================
+      
+{NM_dataset.round(2)}
+
+New Mean: {NM_dataset.mean(axis = 0).round(2)}
+''')
+
+
+
+targets = np.random.randn(6, 4)
+
+
+# the bias is a vector that is added to the target to shift the activation function left or right, enabling flexibility
+bias_array = np.linspace(-0.11, 0.32, 4)
+
+
+print(f'''
+      
+============================= Adding a Bias Vector =============================
+      
+============================= Target (Shape: {targets.shape}) =============================
+
+{targets.round(2)}
+
+
+============================= Biases (Shape: {bias_array.shape}) =============================
+
+{bias_array}
+''')
+
+# let's broadcast...
+# targets (6, 4) + bias_array (4,)
+targets = targets + bias_array
+
+print(f'''
+============================= Final Output (targets + Biases) =============================
+
+{targets.round(2)}
+''')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+np.random.seed(19)
+
+
+# let's create a vector and a matrix...
+
+matrix_A = np.random.randint(34, 77, size = (5, 4))
+
+vector_B = np.linspace(34, 77, 5, dtype = np.int32)
+
+
+print(f'''
+Maxtix A [Shape: {matrix_A.shape}]:
+{matrix_A}
+
+
+Vector B [Shape: {vector_B.shape}]: {vector_B}
+''')
+
+
+# broadcasting the vector will fail
+# (5, 4) + (5, ) = (5, 4) + (, 5)
+# analyzing from right to left:
+# 4 vs. 5  = INCOMPATIBLE!!
+# this operation CANNOT be performed and will result to a ValueError
+
+try:
+
+    matrix_A + vector_B
+
+except ValueError as e:
+
+    print(f'I told you this would result to a ValueError: "{e}"')
+
+
+
+# the solution to this is to make the vector "vector_B" a column vector using np.newaxis
+
+col_vector_B = vector_B[:, np.newaxis]
+
+
+print(f'''
+Original vector_B:
+{vector_B}
+
+Original shape: {vector_B.shape}
+
+New vector_B:
+{col_vector_B}
+
+New shape (using np.newaxis): {col_vector_B.shape}
+''')
+
+
+# let's try broadcasting again
+# it should work this time...
+
+# (5, 4) + (5, 1)
+
+# analyzing from right to left:
+# 4 vs. 1 = COMPATIBLE!! (Rule 2)
+# 5 vs. 5 = COMPATIBLE!! (Rule 2)
+
+
+try:
+    print(f'''
+    Result of matrix_A and new vector_B:
+{matrix_A + col_vector_B}
+    ''')
+
+except ValueError as bummer:
+
+    print(f"Damn! It was supposed to work. Try checking the error out:\n{bummer}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+np.random.seed(19)
+
+
+
+matrix_A = np.random.randint(2, 19, size = (4, 4))
+
+vector_B = np.linspace(2, 19, 4).round(0)
+
+print(f'''
+Original Matrix:
+{matrix_A}
+
+Shape: {matrix_A.shape}
+
+
+Original Vector:
+{vector_B}
+
+Shape: {vector_B.shape}
+''')
+
+
+sv_eqn = np.linalg.solve(matrix_A, vector_B).round(2)
+
+print(f"Solution to the equation: {sv_eqn}")
+
+
+try:
+
+    v_broadcast = matrix_A + vector_B
+
+    print(f"\nResult of matrix and vector addition: {v_broadcast}") # Surprisingly, the addition worked, contrary to the assignment's claims
+
+except ValueError as an_error:
+
+    print(f"Oops! We have an error: {an_error}")
+
+
+# since the addition worked, let's try modifiying matrix_A
+
+matrix_A = np.random.randint(2, 19, size = (4, 5))
+
+# the addition won't work this time...
+
+try:
+
+    v_broadcast = matrix_A + vector_B
+
+    print(f"\nResult of matrix and vector addition: {v_broadcast}")
+
+except ValueError as an_error:
+
+    print(f'''
+Oops! We have an error: {an_error}
+    ''') # addition didn't work, so error statement was printed
+
+
+# now let's use np.newaxis to solve the error
+
+vector_B = vector_B[:, np.newaxis]
+
+
+try:
+
+    v_broadcast = matrix_A + vector_B
+
+    print(f'''
+Result of matrix and vector addition:
+{v_broadcast}
+    ''') # it worked!
+
+except ValueError as an_error:
+
+    print(f'''
+Oops! We have an error: {an_error}
+    ''')
 
 
 

@@ -1,0 +1,15 @@
+DSA segment:
+Segment 1.1: Introduction to DSA
+●	What is a Data Structure? (The "container" for organizing and storing data)
+●	What is an Algorithm? (The "recipe" or set of instructions to perform a task)
+●	The Relationship: Choosing the right container (data structure) for your recipe (algorithm) to be efficient.
+●	Why this matters: Scalability, efficiency, and your career (especially in ML).
+
+
+
+
+OOP segment:
+●	Segment 1.1: What is a Programming Paradigm?
+○	Defining a "paradigm" (a way of thinking).
+○	Introduction to Procedural Programming (the "list of instructions" approach).
+○	The limitations of procedural programming at scale (global state, "spaghetti code," reusability challenges).

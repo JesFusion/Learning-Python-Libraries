@@ -3,6 +3,7 @@ import io
 import numpy as np
 from jesse_custom_code.pandas_file import random_missing_fill as rmf
 import sqlite3
+from sqlalchemy import create_engine
 import time
 from jesse_custom_code.pandas_file import database_path as d_path
 
@@ -3579,6 +3580,800 @@ print(f'''
 ============================= Master Personnel Info =============================
 ''')
 master_personnel.info()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ============================= connecting to the database and extracting the table =============================
+
+print("Connecting to DataBase...")
+time.sleep(2)
+
+
+connection = sqlite3.connect(d_path)
+
+the_dataset = pd.read_sql(
+    "SELECT * FROM sales LIMIT 311",
+
+    connection
+)
+
+connection.close()
+
+
+the_dataset.set_index('Order ID', inplace = True)
+
+print(f'''
+============================= Original Dataset =============================
+
+{the_dataset.sample(6)}
+
+============================= Original Dataset Info =============================
+''')
+
+the_dataset.info()
+
+
+print(f'''
+============================= Original `Sale Date` Column =============================
+
+{the_dataset['Sale Date'].sample(6)}
+
+
+============================= Converted Dataset Info =============================
+''')
+
+
+# now we'll comvert the 'sale date' column to a datetime object
+
+the_dataset['Sale Date'] = pd.to_datetime(the_dataset['Sale Date'])
+
+the_dataset.info()
+
+
+print(f'''
+============================= Converted 'Sale Date' column (to DATETIME) =============================
+
+{the_dataset['Sale Date'].sample(6)}
+''')
+
+
+# ============================= exploring datetime features using .dt =============================
+
+
+# the lines of code below enable us to extract information from the "Sale Date" column and move them to new columns, using '.dt'
+
+the_dataset['sale_month'] = the_dataset['Sale Date'].dt.month
+
+the_dataset['sale_month_name'] = the_dataset['Sale Date'].dt.month_name()
+
+the_dataset['sale_weekday'] = the_dataset['Sale Date'].dt.weekday
+
+the_dataset['sale_day_name'] = the_dataset['Sale Date'].dt.day_name()
+
+the_dataset['sale_year'] = the_dataset['Sale Date'].dt.year
+
+# now, let's view the entire DataFrame
+
+print(f'''
+============================= Final DataFrame with new features (sale_month, sale_weekday, sale_day_name, sale_year) =============================
+      
+{the_dataset.sample(6)}
+''')
+
+'''
+.dt.weekday represents the day as a number:
+ - Monday = 0
+ - Tuesday = 1
+ - Wednesday = 2, and so on...
+
+.dt.day_name() gives you the actual name of that day
+
+I think .dt.weekday is good for training models (i'm not sure though, because these numbers are not meant for performing mathematical operations on), while .dt.day_name() is good for understanding your dataset
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+## Practicing Time-Based Indexing in Pandas
+'''
+
+# establishing a connection and extracting the dataset from the SQL database
+connect = sqlite3.connect(d_path)
+
+the_dataset = pd.read_sql(
+    "SELECT * FROM sales LIMIT 411",
+
+    connect
+)
+
+connect.close()
+
+# let's view the original dataset...
+print(f'''
+============================= Original Dataset =============================
+
+{the_dataset.sample(6)}
+
+============================= Dataset Info =============================
+''')
+
+the_dataset.info()
+
+
+# we convert the 'Sale Date' column to a date_time object and assign it to a new column, 'sale_date', which will be used as the index
+the_dataset['sale_date'] = pd.to_datetime(the_dataset['Sale Date'])
+
+the_dataset = the_dataset.set_index('sale_date').drop(['Sale Date'], axis = 1) # 'Sale Date' was dropped
+
+
+print('''
+============================= DataFrame Info after Setting Date Index =============================
+''')
+
+the_dataset.info()
+
+# now, let's see how to slicing a dataframe using a Datetime index
+print(f'''
+============================= Slicing for the year 2000 =============================
+
+{the_dataset.loc['2000'].sample(5)}
+
+
+============================= Slicing for the year January 2006 =============================
+
+{the_dataset.loc['2006-01']}
+
+
+============================= Slicing for a specific day =============================
+{the_dataset.loc['2024-07-11']}
+''')
+
+
+# ============================= Practicing Timedelta (Time Differences) =============================
+
+
+# time delta is the difference between two points in time
+
+t_diff = the_dataset.index.max() - the_dataset.index.min()
+
+
+print(f'''
+      
+============================= Timedelta (Time Difference) =============================
+
+      
+============================= Time between oldest and latest sale =============================
+      
+
+{t_diff}
+''')
+
+# finding the duration between two points in Time
+
+duration = (the_dataset.index[0].date()) - (the_dataset.index[-1].date())
+
+print(f'''
+NOTE:
+The duration between the first sale ({the_dataset.index[-1].date()}) and last sale ({the_dataset.index[0].date()}) on the DataFrame is {duration}
+
+It's type is {type(duration)}
+''')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+print('Connecting to DataBase...')
+time.sleep(2)
+
+# establishing a connection to the database and extracting the dataset
+connection = sqlite3.connect(d_path)
+
+dataset = pd.read_sql(
+    "SELECT * FROM sales LIMIT 395",
+
+    connection
+)
+
+connection.close() # close the connection
+
+dataset['Sale Date'] = pd.to_datetime(dataset["Sale Date"])
+
+# i want to drop duplicate values since i'll be using it as my index to prevent future errors
+dataset = dataset.drop_duplicates(subset = ["Sale Date"], keep = "last").set_index("Sale Date")
+
+print(f'''
+============================= Original Daily Sales Data =============================
+
+{dataset.sample(6)}
+''')
+
+# let's find the total sales for each 7 day period
+
+print(f'''
+============================= Downsampled to 7-day sums =============================
+
+{dataset['Sales'].resample("7D").sum().sample(6)}
+''')
+
+# find the average sales for each 4-day period
+
+print(f'''
+============================= Downsampled to 4-day averages =============================
+
+{dataset['Sales'].resample("4D").mean().sample(6)}
+''')
+
+# unsampling from daily to 12-hour periods
+# .asfreq() leaves NaNs
+print(f'''
+============================= Unsampling to 12-Hour Sums =============================
+
+{dataset['Sales'].resample('12h').asfreq().sample(6)}
+''')
+
+
+# fill the NaNs using "forward fill" (ffill)
+
+print(f'''
+============================= Unsampled to 12-Hour (Forward Filled) =============================
+
+{dataset["Sales"].resample('12h').ffill().sample(6)}
+''')
+
+# practicing rolling windows
+
+magma = dataset.copy() # copying this dataset, i wanna use it later
+
+dataset['3 Day Moving Avg.'] = dataset['Sales'].rolling(window = 3).mean().round(2) # we add a new column called "3 Day Moving Avg." and in it we place the average of the sale for a row and it's 2 preceeding rows
+
+print(f'''
+============================= Original Data with 3-day Rolling Average Column =============================
+
+{dataset.head(6)}
+''')
+
+
+magma["Rolling_Sum"] = magma["Sales"].rolling(window = 7).sum().round(2) # the "Rolling_Sum" column in magma finds the sum of the "Sales" column in a row and the preceeding 6 rows before it. But for the first 6 rows, they don't have a complete preceeding 6 rows, so pandas just fills them with NaNs
+
+
+# i removed the first 6 rows with NaNs in the "Rolling_Sum" column, but if you wanna see what it looks like, remove the .iloc[7:] below
+print(f'''
+
+============================= Rolling Sum for 7-days =============================
+
+{magma.iloc[7:].head(6)}
+''')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# we'll be using sqlalchemy instead of sqlite3
+# sqlalchemy uses an engine, unlike sqlite3 that "connects"
+
+database_engine = create_engine(f"sqlite:///{d_path}")
+
+"""
+there are two ways to handle data extraction as an ML-Engineer:
+- Workbench-First Way: This involves loading this database on your system and performing SQL queries on item
+But imagine you had a database of 300GB, can you load it on your RAM? Do you even have enough data to download it? The short answer is NO!
+
+- Database-First Way: This involves letting the database run the SQL squery. If it's in a server in Estonia, you'll just throw the query there, it'll run on the server and the result will be sent back to you, thereby saving you RAM and data. 
+"""
+
+
+# ============================= The "Workbench-First" Way (BAD WAY) =============================
+
+# we'll load the database and talk to it with SQL
+
+
+the_dataset = pd.read_sql(
+    "SELECT * FROM sales",
+
+    database_engine
+)
+
+# now let's find the sum of the "Sales" column (The total revenue made)
+t_revenue = the_dataset['Sales'].sum()
+
+print(f'''
+============================= Original Dataset =============================
+
+{the_dataset.head(6)}
+
+Total Revenue (Calculated Using Pandas): {t_revenue}
+''')
+
+
+
+# now, let's try the Database-First method. The method for pros
+
+# ============================= Using the "Database-First" Way (RIGHT WAY) =============================
+
+
+# we'll first write the query...
+
+query_a = """
+    SELECT
+        COUNT(*) AS no_sales,
+        SUM(Sales) AS t_sales,
+        AVG(Sales) AS avg_sale,
+        MIN(Sales) AS min_sale,
+        MAX(Sales) AS max_sale
+    FROM sales;
+"""
+
+# now let's run it...
+
+dataset_summary = pd.read_sql(query_a, database_engine)
+
+print(f"""
+============================= DataFrame Summary retrieved from SQL database after throwing query at it: =============================
+
+{dataset_summary.to_markdown(index = False)}
+""")
+
+# let's extract just the total revenue
+
+total_revenue = dataset_summary["t_sales"].iloc[0]
+
+print(f"Total Revenue (calculated in SQL): {total_revenue:.2f}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+d_engine = create_engine(f"sqlite:///{d_path}")
+
+
+# pd.read_sql_table() is a very ineffient way because it simply loads the entire table and dumps it on your memory. It's probably meant for people with gangster computers
+
+dataset_table1 = pd.read_sql_table("sales", d_engine)
+
+print(f'''
+============================= Table after using pd.read_sql_table() =============================
+
+{dataset_table1.head().to_markdown(index = False)}
+''')
+
+
+# pd.read_sql_query() is much better. It let's you run a query so you won't have to extract everything. Built for broke but smart devs like us
+
+
+query_1 = """
+    SELECT Store, Product, SUM(Sales) AS t_revenue
+    FROM sales
+    GROUP BY Store, Product -- all non-aggregate columns must be grouped!
+    ORDER BY Store, t_revenue DESC;
+"""
+
+dataset_table2 = pd.read_sql_query(query_1, d_engine)
+
+
+print(f'''
+============================= Table after using pd.read_sql_query() =============================
+
+{dataset_table2.to_markdown()}
+''')
+
+
+# now, let's talk about the demon called "SQL INJECTION"
+
+"""
+What if you let a user type in the store they want to see?
+
+- The BAD Way (f-strings): You (the programmer) naively "glue" their input into your query. user_input = "Store_A" query = f"SELECT * FROM sales WHERE Store = '{user_input}'" This looks fine.
+
+The ATTACK: What if a malicious user types this into the search box? user_input = "Store_A'; DROP TABLE Employees; --"
+
+The RESULT: Your f-string builds this query and sends it to the database: SELECT * FROM sales WHERE Store = 'Store_A'; DROP TABLE Employees; --' Your database will run this. It will select from sales, and then it will PERMANENTLY DELETE YOUR ENTIRE Employees TABLE. This is a company-killing mistake.
+
+
+
+The Solution: params= (The "Safe")
+
+The GOOD Way: You never glue strings. You use a placeholder (?) and the params argument. query = "SELECT * FROM sales WHERE Store = ?" df = pd.read_sql_query(query, engine, params=[user_input])
+
+How it Works (The "Safe" Analogy): This method sends the "query template" (...WHERE Store = ?) and the "data" (Store_A'; DROP TABLE...) to the database in two separate, sealed boxes. The database knows the query is the command and the params are just data. It will literally search for a store named "Store_A'; DROP TABLE...". It won't find one, and it won't execute the command. The DROP TABLE command is never executed. It is treated as harmless text.
+
+NEVER use f-strings or + to put user variables in a SQL query. ALWAYS use params=.
+"""
+
+
+
+user_input = input("Enter a store to obtain it's sales: ")
+
+print("Processing...")
+time.sleep(3)
+
+# we'll use the place-holder "?" for the user's data. REMEMBER not to use an f-string
+
+query_2 = """
+    SELECT Store, Product, Sales
+    FROM sales
+    WHERE Store = ?
+    ORDER BY Sales DESC
+    LIMIT 50
+"""
+
+
+# let's use params...
+
+dataset_table3 = pd.read_sql_query(
+    query_2,
+
+    d_engine,
+
+    params = (user_input,) # the database is expected to search for the inputed store, not add it to the query which can be dangerous. Notice the trailing comma after the user input. Omitting it would result to an error
+)
+
+
+# let's print the output for the user
+
+print(f'''
+============================= Safely Loaded top 5 sales for "{user_input}" =============================
+
+{dataset_table3.head().to_markdown(index = False)}
+''')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
