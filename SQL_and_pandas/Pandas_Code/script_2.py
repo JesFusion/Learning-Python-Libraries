@@ -4360,592 +4360,121 @@ print(f'''
 
 
 
+"""
+Question:
+1. In Task 2, you calculated total_spend using SQL. In Task 4, you calculated monthly sales using Pandas .resample(). Why was it better to use SQL for Task 2, but better to use Pandas for Task 4? (Think about the structure of the data).
 
+Answer: Well for staters I don't know how to use SQL for task 4. For Task 2, SQL is much better as it can process large amounts of data. Let's imagine that a single customer had MILLIONS of transactions. Trust me, YOU DO NOT wanna do that with Pandas
+Task 4 involved grouping transactions by months, greatly reducing the size of the dataset. I think it's safe to use pandas for this
+"""
 
 
+D_engine = create_engine(f"sqlite:///{d_path}")
 
+df_customers = pd.read_sql_query(
+    """
+    SELECT customer_id,
+    SUM(amount) AS total_spend,
+    COUNT(customer_id) AS transaction_count,
+    AVG(amount) AS average_txn_value,
+    MAX(txn_date) AS last_purchase_date
+    FROM Transactions
+    GROUP BY customer_id
+    ORDER BY total_spend DESC;
+    """,
 
+    D_engine
+)
 
 
+df_time = pd.read_sql_query(
+    """
+    SELECT txn_date, amount FROM Transactions;
+    """,
 
+    D_engine
+)
 
 
+print(f'''
+============================= Original Dataset =============================
 
+{df_customers.head().to_markdown(index = False)}
 
 
+{df_time.head().to_markdown(index = False)}
 
+============================= df_time info =============================
+''')
+df_time.info()
 
+df_time["txn_date"] = pd.to_datetime(df_time["txn_date"])
 
+print("\n============================= df_time info (txn_date column updated) =============================\n")
 
+df_time.info()
 
 
+df_time["day_name"] = df_time["txn_date"].dt.day_name()
 
+df_time["month_name"] = df_time["txn_date"].dt.month_name()
 
+print(f'''
+============================= Processed df_time DataFrame =============================
+      
+{df_time.sample(6).to_markdown(index = False)}
+''')
 
 
+day_total_sales = df_time.groupby("day_name")["amount"].sum().reset_index().sort_values(by = "amount", ascending = False)
 
 
+print(f"""
+============================= Best day of the week =============================
 
 
+{day_total_sales.to_markdown()}
+""")
 
+df_time = df_time.set_index("txn_date")
 
 
+df_time_resampled = df_time["amount"].resample("Q").sum().reset_index() # finding the sum of sales every 3 months
 
+print(f'''
+============================= df_time with txn_date set as index =============================
 
+{df_time.head().to_markdown()}
 
 
+============================= sum of sales each 3-months =============================
 
+{df_time_resampled.tail(5).to_markdown()}
+''')
 
 
+def get_customer_history(customer_id: str):
 
+    query = """
+SELECT * FROM Transactions
+WHERE customer_id = ?
+ORDER BY txn_date DESC;
+"""
 
+    customer_info = pd.read_sql_query(query, D_engine, params = (customer_id,))
 
+    return customer_info.to_markdown()
 
 
 
+top_customer = get_customer_history("cust_hPlgmRXR")
 
 
+print(f"""
+============================= Transaction for top customer =============================
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+{top_customer}
+""")
 
 
 
