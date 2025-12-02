@@ -1,4 +1,7 @@
 # Procedural Programming (a simple list of instructions) gets messy and hard to maintain ("spaghetti code") because data is global and separate from the functions that use it.
+import random
+from abc import ABC, abstractmethod
+import numpy as np
 
 the_name, the_balance = "Jesse", 1000
 
@@ -794,3 +797,865 @@ person_1 Height: {person_1.hei_ght}
 
 person_2 Height: {person_2.hei_ght}
 ''') # person_1's height remains unchanged, while that of person_2 has been modified
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class Item:
+
+    def __init__(self, name, rarity):
+        
+        self.item_name = name
+
+        self.item_rarity = rarity
+
+        print(f'\nItem "{self.item_name}" created. Rarity: {self.item_rarity}')
+
+
+class Inventory:
+
+    server_region = "US-East"
+
+    def __init__(self, p_name):
+        
+        self.player_name = p_name
+
+        self.capacity = 2
+
+        self.items = []
+
+        self.items = list(self.items)
+
+        print(f'\nPlayer "{self.player_name}" created in region "{Inventory.server_region}".')
+
+    
+    def add_item(self, item_object):
+
+        new_capacity = self.capacity * 2
+
+        if len(self.items) == self.capacity:
+
+            print(f"Inventory full! Resizing from {self.capacity} to {new_capacity}...\n")
+
+            self.capacity = new_capacity
+
+        
+        self.items.append(item_object)
+
+        print(f"{self.player_name} picked up {item_object} (Capacity: {len(self.items)}/{self.capacity})")
+
+
+
+jesse = Inventory(p_name = "Jesse")
+
+
+for item_name in ["Sword", "Shield", "Potion", "Map", "Key"]:
+
+    the_rarity = random.choice(list(range(200)))
+
+    the_item = Item(item_name, the_rarity)
+
+    jesse.add_item(the_item)
+
+
+enemy = Inventory("Enemy")
+
+print(f'''
+Jesse server_region: {jesse.server_region}
+
+Enemy server_region: {enemy.server_region}
+''')
+
+Inventory.server_region = "EU-West"
+
+print(f'''
+Jesse server_region: {jesse.server_region}
+
+Enemy server_region: {enemy.server_region}
+''')
+
+"""
+What is the Big O when the inventory is NOT full?
+Answer: Constant Time (O(1)), because it takes the same time to add and item to the end of a list of 4 items as it does with a list of 200k items
+
+What is the Big O when the inventory IS full and has to resize?
+Answer: Linear Time (O(n)), because we first have to find the size of the list, then double it
+
+As you add more items, how does the memory usage of your self.items list grow relative to the number of items (N)? Is it O(1), O(N), or O(N^2)?
+Answer: O(N^2), because the memory size is the same when we double it, until it's full again. Memory usage is the square of input size
+
+If you change self.server_region = "Asia" inside the add_item method, will it change the region for all players? 
+Answer: False
+Explain why or why not:
+You're just creating a new instance attribute called "server_region" for that particular object. It doesn't change the Class attribute for all players
+"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# create a Simple Linear Regression class 
+class SimLinReg:
+
+    """
+    ## SimpleLinearRegression
+    A `class` representing a basic linear regression model: y = mx + c
+    """
+
+    # methods are special functions inside a class that gives an instance of the class certain abilities. The __init__ method is automatically run whenever you instantiate a class
+
+    def __init__(self, l_rate):
+
+        self.learning_rate = l_rate
+
+        self.model_weights = 0.0
+
+        self.model_bias = 0.0
+
+        self.is_model_trained = False
+
+    
+    def train_model(self, iter):
+
+        """
+        ## Simulates the training process (The Behavior).
+        
+        Args:
+            - iterations (int): How many times to update the weights.
+        """
+
+        print(f"\nStarting training for {iter} iterations...")
+
+        # let's simulate a training loop
+
+        for x in range(1, iter + 1):
+
+            self.model_weights += (self.model_weights * 0.78)
+
+            self.model_bias += (self.model_bias * 0.53)
+
+        
+        self.is_model_trained = True
+
+        print("\nTraining Complete!")
+
+    # a method for the model to predict a value
+    def model_predict(self, val) -> float:
+
+        """
+        ### Makes a prediction using y = mx + c.
+        
+        Args:
+            input_value (float): The input 'x'.
+            
+        Returns:
+            float: The predicted 'y'.
+        """
+
+        if not self.is_model_trained:
+
+            print(f"Model is not yet trained. Status: {self.is_model_trained}")
+
+        model_pred = (self.model_weights * val) + self.model_bias
+
+        return model_pred
+
+
+# let's call the class, train and predict with a model
+ai_model = SimLinReg(l_rate = 0.01)
+
+ai_model.train_model(iter = 39)
+
+pred_result = ai_model.model_predict(val = 7.5)
+
+print(f"\nPrediction for input 7.5: {pred_result:.3f}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class SecureModelLoad:
+
+    def __init__(self, m_name, API_key):
+        
+        # PUBLIC ATTRIBUTE
+        self.model_name = m_name # there was no underscore in front of this instance attribute. This means is public, meaning it can be accessed and altered by anyone
+
+
+        # PROTECTED ATTRIBUTE
+        self._model_status = "instantiating" # one underscore in front of an attribute protects that attribute, but it can still be accessed.
+        # Think of it as a way to tell others that this attribute isn't meant to be touched, but you can if you know what you're doing
+
+
+        # PRIVATE ATTRIBUTE
+        self.__api_key = API_key # two underscores in front of the attribute shows we seriously want to prevent others from accessing or altering the attribute. Python mangles the attribute name so nobody can touch it
+
+    
+    def connect_hub(self):
+
+        """
+        Uses the `private key` to 'connect' (simulate connection).
+        """
+
+        print(f"Connecting to Model Hub using key: {self.__api_key}...")
+
+        self._model_status = "connected"
+
+    
+    def check_its_status(self):
+
+        return self._model_status # we can create a method to make others only be able to view an attribute without being able to alter it
+    
+
+# let's instantiate the class
+
+model_loader = SecureModelLoad("Gemini-3/5", API_key = "efbu#**#24u!83t89q#$3hgnw4")
+
+print(f'''
+Loading Model: {model_loader.model_name}
+
+Current Status (accessing directly): {model_loader._model_status}
+''') # it's Possible to access protected attribues directly. But co-devs and some IDE's will warn you against it
+
+# let's try to access the private attribute
+
+try:
+
+    print(f"\n{model_loader.__api_key}")
+
+except AttributeError as an_error:
+
+    print(f"\nAn error occured due to a private attribute being accessed. Check it out --> {an_error}\n")
+
+
+# there's a secret way to access private attribues. When you create a private attribue, python mangles it to "_{class name}__{secret attribue}"
+
+# let's try to access __api_key this way...
+
+print(f"API key: {model_loader._SecureModelLoad__api_key}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class TrainingConfiguration:
+
+    """
+    ## Configuration Management
+    Manages configuration for a training run.
+    Demonstrates Pythonic encapsulation using @property.
+    """
+
+    def __init__(self, l_rate, l_epochs):
+        
+        # we use a protected attribute to store the actual data, then use a public attribute to trigger validation and prevent check bypassing
+        self._learning_rate = None
+
+        self._learning_epochs = None
+
+        # let's use public attribute so we can't bypass checks
+        self.learning_rate = l_rate
+        self.learning_epochs = l_epochs
+
+        self._exp_ID = "experiment_000"
+
+    
+    # ============================= GETTER =============================
+
+    # the getter is called when you want to view the value of the attribute. Setting only the getter for a method makes the method read-only, meaning it's value can't be modified
+
+    @property
+    def the_learning_rate(self):
+
+        """
+        ### Learning Rate Retrieval
+        Retrieves the learning rate.
+        Usage: `config.learning_rate` (no parentheses!)
+        """
+
+        return self._learning_rate
+
+
+    # ============================= SETTER =============================
+
+    # the setter is called when you want to modify the value of the attribute. It's normally used to write complex logic, that verifies the authenticity and state of the new value before modifying the attribute
+
+    @the_learning_rate.setter
+    def the_learning_rate(self, the_value):
+
+        """
+        Sets the learning rate with strict validation (The Pre-commit Hook).
+        Usage: `config.learning_rate` = 0.01
+        """
+
+        print(f"Attempting to set learning_rate to {the_value}...")
+
+
+        if not isinstance(the_value, (int, float)):
+
+            raise TypeError("Error! Learning Rate must be a number!")
+
+        
+        if the_value <= 0 or the_value >= 1:
+
+            raise ValueError("Learning Rate must be between 0 and 1!")
+
+        
+        self._learning_rate = the_value
+
+        print("Learning rate successfully updated!")
+
+
+    @property
+    def epochs(self):
+
+        return self._learning_epochs
+
+    @epochs.setter
+    def epochs(self, value):
+
+        if not isinstance(value, int) or value <= 0:
+
+            raise ValueError("Epochs must be a positive integer.")
+
+        
+        self._learning_epochs = value
+
+    
+    @property
+    def experiment_ID(self): # experiment_ID will be set to a read-only, as we won't be creating it's setter
+
+        """
+        ## Read-Only
+
+        This property has NO setter\n
+        It is [*read-only*](https://www.merriam-webster.com/dictionary/read-only)
+        """
+
+        return self._exp_ID
+
+
+
+# ============================= instantiating and using the class =============================
+
+
+try:
+
+    configuration = TrainingConfiguration(l_rate = 0.02, l_epochs = 15)
+
+    print(f'''
+Current Learning Rate: {configuration.the_learning_rate}
+    ''')
+
+    configuration.the_learning_rate = 0.05
+
+    print(f'''
+Current Learning Rate: {configuration.the_learning_rate}
+    ''')
+
+except Exception as an_error:
+
+    print(f"\nError: {an_error}")
+    
+
+
+# try to change the value of a read-only method
+
+try:
+
+    configuration.experiment_ID = "experiment_001"
+
+except Exception as an_error:
+
+    print(f"Error occured: {an_error}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class TheBaseModel(ABC):
+
+    """
+    ### TheBaseModel
+    The `Abstract Base` Class (The Contract).
+    Inherits from ABC (Abstract Base Class) module.
+    """
+
+    def __init__(self, the_name, the_config: TrainingConfiguration): # the_config is of type "TrainingConfiguration" meaning we can acess attributes under the TrainingConfiguration class
+
+        self.model_name = the_name
+
+        self.model_configuration = the_config
+
+        self._is_model_trained = False
+
+    @abstractmethod
+    def train_model(self, the_data):
+
+        """
+        @abstractmethod is used for defining a method that must be implemented whenever a subclass is created
+
+        This abstract method contains no implementation and must be overridden by child classes
+        """
+
+        pass
+
+
+    @abstractmethod
+    def predict_model(self, the_data):
+
+        """
+        Child classes MUST override this too.
+        """
+
+        pass
+
+    def save_the_model(self): # it's possible for abstract classes to have solid methods that are shared by all children
+
+        print(f"Saving {self.model_name} to disk...")
+
+
+
+class LRModel(TheBaseModel):
+
+    """
+    A concrete implementation of the blueprint.
+    """
+
+    def train_model(self, the_data):
+        print(f"Training {self.model_name} with Learning rate = {self.model_configuration.learning_rate}") # we accessed the "learning_rate" attribute in the TrainingConfiguration class because it was used as a type for the abstract class "TheBaseModel"
+
+        self._is_model_trained = True
+
+
+    def predict_model(self, the_data):
+
+        if not self._is_model_trained:
+
+            return "Model isn't trained!"
+        
+        return np.random.randn(3).round(2).tolist() # These are Fake predictions, just for testing
+
+
+setup_config = TrainingConfiguration(l_rate = 0.013, l_epochs = 73)
+
+
+# let's try to instantiate the abstract class "TheBaseModel" directly. It'll result in an error
+
+try:
+
+    base_model = TheBaseModel(the_name = "Gemini", the_config = setup_config)
+
+except TypeError as an_error:
+
+    print(f"Cannot instantiate Abstract Base Class: {an_error}")
+    
+
+# Instantiating a derived Class
+
+the_model = LRModel("Neural-Network-v1.2", setup_config)
+
+
+the_model.train_model(np.random.randint(0, 9, size = (3)).tolist())
+
+
+the_model.save_the_model()
+
+
+
+
+
+
+
+
+

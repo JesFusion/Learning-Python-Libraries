@@ -13,4 +13,60 @@
     In Python, classes use CamelCase (Capitalize every word, no underscores). Example: BankAccount, NeuralNetwork, User.
 
     Functions/variables use snake_case: calculate_total, user_name
+},
+
+{
+    Understanding Big O Notations
+    This is the "vocabulary" you will use every day as an engineer. When you look at a piece of code, you need to be able to say, "That's O(n^2), we need to fix it."
+    We rank these from Fastest (Best) to Slowest (Worst).
+
+    1. O(1) - Constant Time (The "Instant" Operation)
+    •	Math: 1 is a constant number. It never changes, no matter what n (input size) is.
+    •	Concept: The runtime is independent of the input size.
+    •	Analogy: Using a light switch. It takes the same amount of time to flip the switch whether the room has 1 lightbulb or 1,000 lightbulbs. The wiring handles it instantly.
+    •	Code Example: Accessing a list by index (my_list[0]) or a dictionary lookup (my_dict['key']).
+
+
+    2. O(\log n) - Logarithmic Time (The "Divide and Conquer")
+    •	Math: Logarithm is the opposite of an exponent.
+    o	Formula: \log_2 n = x asks "How many times must I divide n in half to get to 1?"
+    o	Example: If n = 16, \log_2 16 = 4 (because 16 \to 8 \to 4 \to 2 \to 1 is 4 steps).
+    o	Key Insight: Even if n is a billion, \log n is very small (about 30 steps). It grows extremely slowly.
+    •	Concept: At every step, you cut the problem in half.
+    •	Analogy: Looking up a word in a physical dictionary. You open to the middle, see the word is after, so you ignore the first half. You repeat this until you find it.
+    •	Code Example: Binary Search.
+
+
+    3. O(n) - Linear Time (The "Loop")
+    •	Math: y = x. A straight line.
+    •	Concept: If you double the input, you double the time.
+    •	Analogy: Reading a book. If the book has 100 pages, it takes x time. If it has 200 pages, it takes 2x time. You have to look at every page.
+    •	Code Example: A simple for loop looking for an item in an unsorted list.
+
+
+    4. O(n \log n) - Log-Linear Time (The "Efficient Sort")
+    •	Math: This is n multiplied by \log n.
+    •	Concept: It’s slightly slower than linear, but much faster than quadratic. This is the standard speed for good sorting algorithms.
+    •	Analogy: Organizing a shuffled deck of cards. You can't just look at them once (n); you have to compare them and move them around.
+    •	Code Example: Merge Sort, Quick Sort (Python's built-in .sort() uses Timsort, which is O(n \log n)).
+
+
+    5. O(n^2) - Quadratic Time (The "Nested Loop")
+    •	Math: n squared. If n = 10, time = 100. If n = 100, time = 10,000.
+    •	Concept: For every single item in the list, you loop through the entire list again.
+    •	Analogy: Comparing everyone in a room to everyone else to find matching birthdays. Person A checks Person B, C, D... Then Person B checks Person A, C, D...
+    •	Code Example: A "Nested Loop" (a loop inside a loop).
+
+    
+    6. O(2^n) - Exponential Time (The "Explosion")
+    •	Math: 2 to the power of n. If n increases by 1, the time doubles.
+    o	n=10 \to 1,024 steps.
+    o	n=20 \to 1,048,576 steps.
+    •	Concept: This is usually a "Brute Force" approach where you try every possible combination. It is impossibly slow for large inputs.
+    •	Analogy: Cracking a password by trying every single combination of letters.
+    •	Code Example: Recursive calculation of Fibonacci numbers (without caching).
+},
+
+{
+    it is best practice to name your methods as active verbs (e.g., calculate_loss, not loss_calculation)
 }
