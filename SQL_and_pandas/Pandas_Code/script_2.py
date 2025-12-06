@@ -1,12 +1,12 @@
 import pandas as pd
 import io
 import numpy as np
+import sqlalchemy
 from jesse_custom_code.pandas_file import random_missing_fill as rmf
 import sqlite3
 from sqlalchemy import create_engine
 import time
-from jesse_custom_code.pandas_file import database_path as d_path, ord_series_mapping, brief_table
-
+from jesse_custom_code.pandas_file import database_path as d_path, ord_series_mapping, dataset_save_path, brief_table
 
 a_series = pd.Series([-1, 3, 3.4, "erre", True, None, 6, 0])
 
@@ -5626,6 +5626,367 @@ print(f'''
       
 {the_dataset.sample(6).to_markdown()}
 ''')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+database_engine = create_engine(f"sqlite:///{d_path}")
+
+
+# ===================================== Ways to prepare dataset for Regression Models =====================================
+
+# let's extract the dataset from our database...
+
+hp_dset = pd.read_sql(
+    "SELECT * FROM House_Prices",
+
+    database_engine
+) # hp_dset == "House_Prices Dataset"
+
+
+print(f'''
+======================================== Original Dataset ========================================
+      
+{hp_dset.head().to_markdown()}
+''')
+
+# let's simulate dirty data by injecting nulls in the dataset
+
+hp_dset.loc[:56:3, "Bedrooms"] = np.nan
+
+print(f'''
+======================================== Dataset with missing values ========================================
+      
+{hp_dset.sample(5).to_markdown()}
+''')
+
+# filling the missing values with the median...
+
+hp_dset["Bedrooms"] = hp_dset["Bedrooms"].fillna(hp_dset["Bedrooms"].median())
+
+
+# ===================================== Feature-Engineering (Encoding) =====================================
+
+# we perform One-Hot encoding on the Neighborhood column since it's nominal data and is of object type
+
+neigh_dummies = pd.get_dummies(hp_dset["Neighborhood"], prefix = "hood", drop_first = True)
+
+# adding the dummies dataframe to the dataset...
+hp_dset = pd.concat([hp_dset, neigh_dummies], axis = 1).drop(["Neighborhood"], axis = 1)
+
+
+# splitting into features and targets...
+
+feature_x = hp_dset.drop(["Price", "HouseID"], axis = 1)
+
+label_y = hp_dset["Price"]
+
+print(f'''
+======================================== Features ========================================
+
+{feature_x.sample(5).to_markdown()}
+
+
+===================================== Targets =====================================
+
+{label_y.sample(5).to_markdown()}
+''')
+
+
+
+# ===================================== Ways to prepare dataset for Classification Models =====================================
+
+
+# we need to load two Tables for this
+
+users_dataset = pd.read_sql(
+    "SELECT * FROM Users",
+
+    database_engine
+)
+
+transaction_dataset = pd.read_sql(
+    "SELECT * FROM Transactions",
+
+    database_engine
+)
+
+print(f'''
+======================================== Users Dataset ========================================
+      
+{users_dataset.sample(5).to_markdown()}
+
+
+======================================== Transactions Dataset ========================================
+
+{transaction_dataset.sample(5).to_markdown()}
+''')
+
+user_spend = transaction_dataset.groupby("UserID")["Amount"].sum().reset_index()
+
+# renaming "Amount" to a more appropriate and explanantory column
+user_spend.rename(
+    columns = {
+        "Amount": "User's Total Spend"
+    },
+
+    inplace = True
+)
+
+print(f'''
+======================================== Grouping User's Transactions ========================================
+      
+{user_spend.sample(6).to_markdown()}
+''')
+
+# the merge (Joining Features)
+
+merged_dataset = pd.merge(
+    left = users_dataset,
+    right = user_spend,
+    on = "UserID",
+    how = "left"
+)
+
+# filling NaN for non-spenders (NaN means $0 spend)
+
+merged_dataset["User's Total Spend"] = merged_dataset["User's Total Spend"].fillna(0)
+
+merged_dataset["is_VIP?"] = (merged_dataset["User's Total Spend"] > 250).astype(int) # we're creating a new column called "is_VIP?" for users with spend greater than $250
+
+
+print(f'''
+======================================== Processed Dataset ========================================
+      
+{merged_dataset.sample(6).to_markdown()}
+''')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== creating a reusable fucntion =====================================
+
+def copy_dataframe(dataframe: pd.DataFrame) -> pd.DataFrame:
+
+    return dataframe.copy()
+
+# ===================================== Saving and Loading a Dataset =====================================
+
+
+the_dataset = pd.read_sql(
+    "SELECT * FROM Regional_Sales",
+
+    sqlalchemy.create_engine(f"sqlite:///{d_path}")
+)
+
+# ===================================== saving a dataset with pickle =====================================
+
+the_dataset.to_pickle(f"{dataset_save_path}reg_sales_dset_pickle.pkl")
+
+# loading the dataset...
+
+loaded_dataset_pickle = pd.read_pickle(f"{dataset_save_path}reg_sales_dset_pickle.pkl")
+
+print(f'''
+======================================== Dataset Saved with Pickle ========================================
+      
+{loaded_dataset_pickle.sample(6).to_markdown()}
+''')
+
+
+# ===================================== Saving with Parquet (recommended approach) =====================================
+
+# Parquet is the best method for saving your dataset as someone working with data
+
+# It is the industry standard, highly compressed, retains schema and readable by other languages.
+
+
+# saving the dataset...
+
+the_dataset.to_parquet(f"{dataset_save_path}reg_sales_dset_parquet.parquet")
+
+
+# loading the dataset...
+
+loaded_dataset_parquet = pd.read_parquet(f"{dataset_save_path}reg_sales_dset_parquet.parquet")
+
+
+print(f'''
+======================================== Dataset Saved with Parquet ========================================
+      
+{loaded_dataset_parquet.sample(6).to_markdown()}
+''')
+
 
 
 
