@@ -5992,3 +5992,258 @@ print(f'''
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== Task 1: The Reshape & Refine (Module 8) =====================================
+
+# loading the raw_user_logs dataset
+the_dataset = pd.read_csv(f"{dataset_save_path}raw_user_logs.csv").round(2) # dataset_save_path = "/home/jesfusion/Documents/ml/ML-Learning-Repository/Saved_Datasets_and_Models/Datasets/"
+
+
+print(f'''
+======================================== Original Dataset ========================================
+      
+{the_dataset.sample(6).to_markdown()}
+''')
+
+# extracting the column names of the_dataset and putting it in a list
+c_names = list(the_dataset.columns)
+
+melt_cnames = c_names[:3] # this is our id_vars when we melt the columns
+melt_cnames.append(c_names[-1])
+
+melt_vnames = c_names[3:-1] # this is our value_vars when we melt the columns
+
+
+# melting the specfied columns...
+the_dataset = pd.melt(the_dataset, id_vars = melt_cnames, value_vars = melt_vnames, var_name = "Month", value_name = "Clicks")
+
+
+print(f'''
+{the_dataset.head().to_markdown()}
+''')
+
+c_names = list(the_dataset.columns)
+
+# calculating the total clicks per Device per month
+click_count = the_dataset.groupby([c_names[1], c_names[-2]], observed = True)["Clicks"].count()
+
+# renaming the column name of the Resulting series to represent the data well
+click_count.name = "Total_Clicks"
+
+# creating a column called "Engagement" that specifies "High" for clicks greater than 50 and "Low" for clicks less
+the_dataset['Engagement'] = the_dataset["Clicks"].apply(lambda clicks: "High" if clicks > 50 else "Low")
+
+
+
+# ===================================== Task 2: The Memory Audit (Module 9) =====================================
+
+
+# obtaining dataset memory size...
+the_dataset.info(memory_usage = "deep") # memory usage: 85.1 MB
+
+# converting data-types
+the_dataset = the_dataset.astype({
+    'Device': 'category',
+    'Account_Status': 'category',
+    'Month': 'category',
+    'Session_Duration': 'float32',
+    'Clicks': 'int16'
+})
+
+# obtaining reduced memory usage
+the_dataset.info(memory_usage = "deep")
+# memory usage: 34.2 MB
+
+original_memory = 85.1
+new_memory = 34.2
+
+print(f'''
+Original Memory Before Converting Data Types: {original_memory}MB
+
+New Memory After Converting Data Types: {new_memory}MB
+
+Percentage Reduction was {((original_memory - new_memory) / original_memory) * 100:.2f}%
+''')
+
+
+# speed test:
+# here we multiply two columns manually using .apply() and then we use vectorization to perform the same task and compare the time spent for both
+
+time_1 = time.time()
+
+# using .apply()
+the_dataset["Score_Slow"] = the_dataset.apply(lambda row: row["Session_Duration"] * row["Clicks"], axis = 1)
+
+time_2 = time.time()
+
+# using vectorization
+the_dataset["Score_Fast"] = the_dataset["Session_Duration"] * the_dataset["Clicks"]
+
+time_3 = time.time()
+
+VIP_mobile_clicks = the_dataset.query("Device == 'Mobile' and Clicks > 80")
+
+the_dataset = the_dataset.set_index("User_ID")
+
+slow_time = time_2 - time_1
+
+fast_time = time_3 - time_2
+
+
+print(f'''
+======================================== Processed Dataset ========================================
+      
+{the_dataset.sample(6).to_markdown()}
+
+Score_Slow Time: {slow_time}
+
+Score_Fast Time: {fast_time}
+
+Percentage Reduction was {((slow_time - fast_time) / slow_time) * 100:.2f}%
+''') # vectorization turned out to be faster (as always) because it works in C
+
+
+
+
+
+# ===================================== Task 3: The SQL Bridge & ML Prep (Module 10) =====================================
+
+# extracting users dataset from the database
+
+database_engine = sqlalchemy.create_engine(f"sqlite:///{d_path}")
+
+
+users_dataset = pd.read_sql(
+    "SELECT * FROM Users",
+    
+    database_engine
+).rename(columns = {"UserID": "User_ID"})
+
+
+print(f'''
+======================================== Original Dataset ========================================
+      
+{users_dataset.sample(6).to_markdown()}
+''')
+
+# merging the processed dataset in Task 2 to the users dataset 
+merged_dataset = pd.merge(the_dataset, users_dataset, on = "User_ID", how = "outer")
+
+# performing One-Hot Encoding on the "Device" column
+merged_dataset_dummies = pd.get_dummies(merged_dataset["Device"], prefix = "dev", dtype = int, drop_first = True)
+
+# joining the encoded column to the original dataset
+merged_dataset = pd.concat([merged_dataset, merged_dataset_dummies], axis = 1).drop(["Device"], axis = 1)
+
+
+# binning the "Session_Duration" column using pd.qcut() into equal "Short", "Medium" and "Long" sessions
+
+merged_dataset["Session_Bins"] = pd.qcut(merged_dataset["Session_Duration"], q = 3, labels = ["Short", "Medium", "Long"])
+
+
+# defining features and targets...
+features_x = merged_dataset[["Clicks", "dev_Mobile", "dev_Tablet", "Session_Bins"]]
+targets_y = merged_dataset["Engagement"]
+
+
+# exporting as a .parquet file
+features_x.to_parquet(f'{dataset_save_path}processed_features.parquet')
+
+
+print("Dataset Pre-processed and saved to processed_features.parquet!")
+
+
+
+
+
