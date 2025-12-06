@@ -5136,7 +5136,6 @@ dataset = pd.DataFrame({
 })
 
 print('''
-================================ Standard Info - Incomplete Truth (only shows memory address size) ================================
 ''')
 dataset.info() # using .info() like that method only shows us the memory usage of the addresses
 
@@ -5144,7 +5143,6 @@ dataset.info() # using .info() like that method only shows us the memory usage o
 
 
 print('''
-=========================== Deep Info - Complete Truth (shows the memory of both object and address size) ===========================
 ''')
 
 dataset.info(memory_usage = "deep")
@@ -5156,7 +5154,6 @@ dataset.info(memory_usage = "deep")
 column_memory = dataset.memory_usage(deep = True)
 
 print(f'''
-======================================== Memory Usage of each individual column ========================================
 
 {column_memory}
 ''')
@@ -5241,7 +5238,6 @@ dataset = pd.DataFrame({
 true_mem_size = dataset.memory_usage(deep = True).sum()
 
 print(f'''
-======================================== Original Memory Usage ========================================
       
 {true_mem_size / 1024**2:.2f} MB
 ''')
@@ -5254,7 +5250,6 @@ name_mem = dataset["Name"].memory_usage(deep = True)
 name_cat_mem = dataset["name_category"].memory_usage(deep = True)
 
 print(f'''
-======================================== Comparing memory size of Name vs. name_category ========================================
       
 Name: {name_mem / 1024**2:.2f} MB
 
@@ -5268,7 +5263,6 @@ dataset["Age_32"] = dataset["Age"].astype("float32")
 
 
 print(f'''
-======================================== Memory Size of float32 vs. float64 ========================================
       
 float64: {(dataset["Age"].memory_usage(deep = True)) / 1024**2:.2f} MB
 
@@ -5378,7 +5372,6 @@ the_dataset = pd.read_sql(
 the_dataset = the_dataset.set_index("txn_id")
 
 print(f'''
-======================================== Original Dataset ========================================
 
 {the_dataset.head(6).to_markdown()}
 ''')
@@ -5404,7 +5397,6 @@ apply_time = t_2 - t_1
 vec_time = t_3 - t_2
 
 print(f'''
-======================================== Modified Dataset ========================================
       
 {the_dataset.sample(6).round(2).to_markdown()}
 
@@ -5424,12 +5416,10 @@ new_filtering = the_dataset.query("District == 'District_1' and Sales > 400") # 
 
 
 print(f'''
-=================================== Using old_filtering method (length: {len(old_filtering)}) ===================================
 
 {old_filtering.head().to_markdown()}
 
 
-================================ Using new_filtering method ".apply()" (length: {len(new_filtering)}) ================================
 
 {new_filtering.head().to_markdown()}
 ''')
@@ -5539,7 +5529,6 @@ the_dataset = pd.read_sql(
 
 
 print(f'''
-======================================== Original Dataset ========================================
 
 {the_dataset.head(6).to_markdown()}
 ''')
@@ -5558,7 +5547,6 @@ print(f'''
 reg_dummies = pd.get_dummies(the_dataset["Region"], prefix = "reg", dtype = int)#.drop(["Region"], axis = 1)
 
 print(f'''
-======================================== One Hot Encoded Region ========================================
       
 {reg_dummies.sample(6).to_markdown()}
 ''')
@@ -5575,7 +5563,6 @@ the_dataset["Region Level"] = the_dataset["Region"].map(reg_map_dict) # here we 
 
 
 print(f'''
-==================================== Ordinal Mapped Region ====================================
       
 {the_dataset.head().to_markdown()}
 ''')
@@ -5609,7 +5596,6 @@ the_dataset["Sale Tier"] = pd.qcut(the_dataset["Sales"], q = 2, labels = ["Sales
 
 
 print(f'''
-======================================== Binned Dataset ========================================
       
 {the_dataset.sample(6).to_markdown()}
 ''')
@@ -5622,7 +5608,6 @@ print(f'''
 the_dataset["Unit Price"] = the_dataset["Sales"] / the_dataset["Quantity"] # unit price gives us the price of each individual item you bought, which could be a meaningful feature
 
 print(f'''
-======================================== Dataset with Interaction Feature ========================================
       
 {the_dataset.sample(6).to_markdown()}
 ''')
@@ -5736,7 +5721,6 @@ hp_dset = pd.read_sql(
 
 
 print(f'''
-======================================== Original Dataset ========================================
       
 {hp_dset.head().to_markdown()}
 ''')
@@ -5746,7 +5730,6 @@ print(f'''
 hp_dset.loc[:56:3, "Bedrooms"] = np.nan
 
 print(f'''
-======================================== Dataset with missing values ========================================
       
 {hp_dset.sample(5).to_markdown()}
 ''')
@@ -5773,12 +5756,10 @@ feature_x = hp_dset.drop(["Price", "HouseID"], axis = 1)
 label_y = hp_dset["Price"]
 
 print(f'''
-======================================== Features ========================================
 
 {feature_x.sample(5).to_markdown()}
 
 
-===================================== Targets =====================================
 
 {label_y.sample(5).to_markdown()}
 ''')
@@ -5803,12 +5784,10 @@ transaction_dataset = pd.read_sql(
 )
 
 print(f'''
-======================================== Users Dataset ========================================
       
 {users_dataset.sample(5).to_markdown()}
 
 
-======================================== Transactions Dataset ========================================
 
 {transaction_dataset.sample(5).to_markdown()}
 ''')
@@ -5825,7 +5804,6 @@ user_spend.rename(
 )
 
 print(f'''
-======================================== Grouping User's Transactions ========================================
       
 {user_spend.sample(6).to_markdown()}
 ''')
@@ -5847,7 +5825,6 @@ merged_dataset["is_VIP?"] = (merged_dataset["User's Total Spend"] > 250).astype(
 
 
 print(f'''
-======================================== Processed Dataset ========================================
       
 {merged_dataset.sample(6).to_markdown()}
 ''')
@@ -5958,7 +5935,6 @@ the_dataset.to_pickle(f"{dataset_save_path}reg_sales_dset_pickle.pkl")
 loaded_dataset_pickle = pd.read_pickle(f"{dataset_save_path}reg_sales_dset_pickle.pkl")
 
 print(f'''
-======================================== Dataset Saved with Pickle ========================================
       
 {loaded_dataset_pickle.sample(6).to_markdown()}
 ''')
@@ -5982,7 +5958,6 @@ loaded_dataset_parquet = pd.read_parquet(f"{dataset_save_path}reg_sales_dset_par
 
 
 print(f'''
-======================================== Dataset Saved with Parquet ========================================
       
 {loaded_dataset_parquet.sample(6).to_markdown()}
 ''')
@@ -6091,7 +6066,6 @@ the_dataset = pd.read_csv(f"{dataset_save_path}raw_user_logs.csv").round(2) # da
 
 
 print(f'''
-======================================== Original Dataset ========================================
       
 {the_dataset.sample(6).to_markdown()}
 ''')
@@ -6182,7 +6156,6 @@ fast_time = time_3 - time_2
 
 
 print(f'''
-======================================== Processed Dataset ========================================
       
 {the_dataset.sample(6).to_markdown()}
 
@@ -6212,7 +6185,6 @@ users_dataset = pd.read_sql(
 
 
 print(f'''
-======================================== Original Dataset ========================================
       
 {users_dataset.sample(6).to_markdown()}
 ''')
