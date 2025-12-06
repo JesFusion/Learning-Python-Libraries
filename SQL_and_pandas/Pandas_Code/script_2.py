@@ -5,7 +5,7 @@ from jesse_custom_code.pandas_file import random_missing_fill as rmf
 import sqlite3
 from sqlalchemy import create_engine
 import time
-from jesse_custom_code.pandas_file import database_path as d_path, brief_table
+from jesse_custom_code.pandas_file import database_path as d_path, ord_series_mapping, brief_table
 
 
 a_series = pd.Series([-1, 3, 3.4, "erre", True, None, 6, 0])
@@ -5273,6 +5273,358 @@ print(f'''
 float64: {(dataset["Age"].memory_usage(deep = True)) / 1024**2:.2f} MB
 
 float32: {(dataset["Age_32"].memory_usage(deep = True)) / 1024**2:.2f} MB
+''')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# let's extract a table from an SQL databse and use it for this practice
+the_dataset = pd.read_sql(
+    "SELECT * FROM Regional_Sales",
+
+    create_engine(f"sqlite:///{d_path}")
+)
+
+# we set txn_id as the index
+the_dataset = the_dataset.set_index("txn_id")
+
+print(f'''
+======================================== Original Dataset ========================================
+
+{the_dataset.head(6).to_markdown()}
+''')
+
+the_dataset.info(memory_usage = "deep")
+
+
+
+# ===================================== Vectorization vs. Apply =====================================
+
+t_1 = time.time()
+
+the_dataset["unit_price"] = the_dataset.apply(lambda row: row["Sales"] / row["Quantity"], axis = 1) # using .apply(), we apply a custom function to each row (specified by setting axis to 1). Pandas will have to go through each row manually to perform this, making it slower when it comes to large datasets
+
+t_2 = time.time()
+
+the_dataset["unit_price (Vec.)"] = the_dataset["Sales"] / the_dataset["Quantity"] # here we just use a column to divide another column. Vectorization works here behind the scenes, making it faster than traditional .apply()
+
+t_3 = time.time()
+
+apply_time = t_2 - t_1
+
+vec_time = t_3 - t_2
+
+print(f'''
+======================================== Modified Dataset ========================================
+      
+{the_dataset.sample(6).round(2).to_markdown()}
+
+using .apply() took {apply_time:.4f} seconds
+
+using vectorization took {vec_time:.4f} seconds
+
+Vectorization is {((apply_time - vec_time) / apply_time) * 100:.2f}% faster than .apply()
+''')
+
+
+# ===================================== using the .query() method =====================================
+
+old_filtering = the_dataset[(the_dataset["District"] == "District_1")& (the_dataset["Sales"] > 400)] # we're using boolean indexing here. It's traditionally slower beacuse it goes through every single row
+
+new_filtering = the_dataset.query("District == 'District_1' and Sales > 400") # the .query() method is faster than using Boolean Indexing because it lets you write SQL like strings
+
+
+print(f'''
+=================================== Using old_filtering method (length: {len(old_filtering)}) ===================================
+
+{old_filtering.head().to_markdown()}
+
+
+================================ Using new_filtering method ".apply()" (length: {len(new_filtering)}) ================================
+
+{new_filtering.head().to_markdown()}
+''')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# let's extract a table from an SQL databse and use it for this practice
+the_dataset = pd.read_sql(
+    "SELECT Region, Product, Sales, Quantity FROM Regional_Sales",
+
+    create_engine(f"sqlite:///{d_path}")
+)
+
+
+print(f'''
+======================================== Original Dataset ========================================
+
+{the_dataset.head(6).to_markdown()}
+''')
+
+# ===================================== One-Hot Encoding =====================================
+
+# we use pd.get_dummies() to perform One-Hot Encoding on nominal data (data with no order)
+
+# Example: Region (East, West, North, South)
+
+# Problem: If you number them 1, 2, 3, 4 the model thinks South (4) is "greater than" East (1).
+
+# Solution: Create 4 columns: reg_East, reg_West, reg_North, reg_South. Binary 0 or 1.
+
+
+reg_dummies = pd.get_dummies(the_dataset["Region"], prefix = "reg", dtype = int)#.drop(["Region"], axis = 1)
+
+print(f'''
+======================================== One Hot Encoded Region ========================================
+      
+{reg_dummies.sample(6).to_markdown()}
+''')
+
+
+# ===================================== ORDINAL ENCODING =====================================
+
+# we use .map() for ordinal data (data that has rank). we first create a dictionary showing the rank of each unique value and then we map using that dictionary
+
+reg_map_dict = ord_series_mapping(the_dataset["Region"]) # my custom function ord_series_mapping() creates the dictionary for us
+
+
+the_dataset["Region Level"] = the_dataset["Region"].map(reg_map_dict) # here we map using the dictionary and create a new column for the result
+
+
+print(f'''
+==================================== Ordinal Mapped Region ====================================
+      
+{the_dataset.head().to_markdown()}
+''')
+
+
+# ===================================== BINNING =====================================
+
+# let's see the differnce between .cut() vs. .qcut() when binning
+
+# in binning we assign values in a column to various groups, usually of integer data-type
+
+"""
+For Example, when grouping sizes: 
+- Small -> 0 - 35
+- Medium -> 35 - 75
+- Large -> 75 - 100
+"""
+
+# in .cut(), we first create the bin (0, 35, 75, 100) and the label (Small, Medium, Large) and then create a new column that checks each value in a column that we assign, and then assign each value in that column to it's label
+
+sale_bins = [0, 350, 550, 1000]
+
+sale_label = ["Small Sale", "Medium Sale", "Large Sale"]
+
+the_dataset["Sale Level"] = pd.cut(the_dataset["Sales"], bins = sale_bins, labels = sale_label)
+
+
+# in .qcut(), we we can group an entire column into 2 or more groups. And give each group a label. We'll create a new column to display the group label of each value in the group
+
+the_dataset["Sale Tier"] = pd.qcut(the_dataset["Sales"], q = 2, labels = ["Sales below 500", "Sales above 500"])
+
+
+print(f'''
+======================================== Binned Dataset ========================================
+      
+{the_dataset.sample(6).to_markdown()}
+''')
+
+
+# ===================================== Interaction features =====================================
+
+# sometimes a model learns best when you combine two features together to create a meaningful one
+
+the_dataset["Unit Price"] = the_dataset["Sales"] / the_dataset["Quantity"] # unit price gives us the price of each individual item you bought, which could be a meaningful feature
+
+print(f'''
+======================================== Dataset with Interaction Feature ========================================
+      
+{the_dataset.sample(6).to_markdown()}
 ''')
 
 
