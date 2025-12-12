@@ -1,7 +1,10 @@
+import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 from sklearn.datasets import load_iris
 from jesse_custom_code.pandas_file import postgre_connect
+from sklearn.impute import SimpleImputer
+
 
 
 # ===================================== Sourcing Data =====================================
@@ -230,6 +233,126 @@ Solution: We need Scaling
 """
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== Extracting Dataset =====================================
+
+database_engine = create_engine(postgre_connect)
+
+with database_engine.connect() as database_connection:
+
+    user_credit_dataset = pd.read_sql(
+        "SELECT age, credit_score FROM user_credit_logs",
+        database_connection
+    )
+
+
+
+print(f'''
+======================================== Extracted Dataset (Pre-Cleaning) ========================================
+      
+{user_credit_dataset.head().to_markdown()}
+''')
+
+
+# we'll use SimpleImputer to fill the missing values
+
+'''
+SimpleImputer is a class in sklearn that helps us fill missing values with the:
+
+1. Mean: Good for normal data.
+
+2. Median: Good for data with outliers (billionaires don't skew the median income, but they ruin the mean).
+
+3. Mode (Most Frequent): Good for categorical data (fill missing color with "Red" if "Red" is most common).
+'''
+
+
+sk_imputer = SimpleImputer(missing_values = np.nan, strategy = "mean")
+
+cleaned_array = sk_imputer.fit_transform(user_credit_dataset) # .fit_transform returns a Numpy array, not a DataFrame. It strips the column of it's headers before working on it
+
+cleaned_dataset = pd.DataFrame(cleaned_array, columns = ["age", 'credit_score'])
+
+
+print(f'''
+======================================== Cleaned Dataset (Post-Imputation) ========================================
+      
+{cleaned_dataset.head().to_markdown()}
+''')
 
 
 
