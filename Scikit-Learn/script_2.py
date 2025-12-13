@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 from sklearn.datasets import load_iris
-from jesse_custom_code.pandas_file import postgre_connect, PDataset_save_path as psp
+from jesse_custom_code.pandas_file import postgre_connect, PDataset_save_path as psp, dataset_save_path
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from jesse_custom_code.build_database import PSQLDataGenerator
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
@@ -975,6 +976,163 @@ Shape: {X_test.shape}
 ''')
 
 print("\nData Split and Scaled correctly without leakage!\n")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+np.random.seed(19)
+
+'''
+house_dataset = pd.DataFrame({
+    "sq_ft": np.random.randint(1000, 9999, size = 59999),
+    "age": np.random.randint(18, 66, size = 59999),
+    "price": np.random.randint(100, 1000, size = 59999), # Target 1 (Continuous)
+    "sold_fast": np.random.randint(0, 2, size = 59999) # Target 2 (Category: 1=Yes, 0=No)
+})
+'''
+
+house_dataset = pd.read_parquet(f"{dataset_save_path}house_specs.parquet")
+
+
+print(f'''
+======================================== Original Dataset ========================================
+      
+{house_dataset.sample(7).to_markdown()}''')
+
+# assigning features and targets...
+# Notice that to converted the features and targets to a numpy array, because it strips the DataFrame of it's column names. If I didn't, I'll get this warning when predicting with the model:
+# UserWarning: X does not have valid feature names, but KNeighborsRegressor was fitted with feature names
+
+features_x = house_dataset.drop(["price", "sold_fast"], axis = 1).to_numpy()
+
+target_price = house_dataset["price"].to_numpy()
+
+targets_sale = house_dataset["sold_fast"].to_numpy()
+
+
+"""
+KNN predicts the value of an input by comparing it's entries with that of similar (ie, closely similar to) entires in the training data.
+
+
+It is used in both classification and regression:
+1. Classification: If 2 out of 3 neighbors churned, the new user will likely churn. (Voting).
+2. Regression: If the 3 neighbors spend $100, $120, and $110, the new user will likely spend $110. (Averaging).
+
+A small K (e.g: 1) is highly sensitive to noise, while a large one (e.g: 45) is smooth but might miss important details
+
+A "K" value is passed by inserting a value to the "n_neighbors" attribute in KNeighborsRegressor or KNeighborsClassifier)
+"""
+
+# ===================================== KNN FOR REGRESSION (Predicting price) =====================================
+
+knn_model_reg = KNeighborsRegressor(n_neighbors = 4)
+
+knn_model_reg.fit(features_x, target_price)
+
+house_data = np.array([[5623, 20]]) # our testing data will be a 20 year old house with 5623 sqft capacity
+
+# let's predict using our model...
+price_predict = knn_model_reg.predict(house_data)
+
+print(f'''
+Square feet: {house_data[0][0]} sqft
+House Age: {house_data[0][1]} years
+Predicted Price from Model: ${price_predict[0]:.2f}''')
+
+
+# ===================================== KNN FOR CLASSIFICATION (Predicting Speed) =====================================
+
+# here we classify data into groups. 0 means a house won't sell fast (slow group), while 1 means that the house will sell fast (fast group)
+
+knn_model_cls = KNeighborsClassifier(n_neighbors = 5).fit(features_x, targets_sale)
+
+# Predicting if the house will sell fast...
+
+sale_pred = knn_model_cls.predict(house_data)
+
+category = ["No", "Yes"] # let's map the groups to a list. It'll help us understand the model's prediction easily
+
+print(f'''
+Will the {house_data[0][1]}-year old house of {house_data[0][0]} sqft sell fast? {category[int(sale_pred[0])]}
+''')
+
+
 
 
 
