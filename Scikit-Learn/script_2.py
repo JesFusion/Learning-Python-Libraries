@@ -5,6 +5,7 @@ from sklearn.datasets import load_iris
 from jesse_custom_code.pandas_file import postgre_connect, PDataset_save_path as psp
 from jesse_custom_code.build_database import PSQLDataGenerator
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
 
@@ -843,6 +844,137 @@ print(f'''
 {scd_dframe.head().to_markdown()}
 ''')
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== loading & dividing the dataset =====================================
+
+dataset = pd.DataFrame({
+    'usage_hours': [10, 50, 5, 100] * 250,
+    'payments': [1, 5, 0, 10] * 250,
+    'churn': [1, 0, 1, 0] * 250
+})
+
+print(f'''
+======================================== Original Dataset ========================================
+      
+{dataset.sample(6).to_markdown()}
+''')
+
+# dividing the dataset into features and labels...
+features_x = dataset.drop(["churn"], axis = 1)
+
+target_y = dataset["churn"]
+
+
+# ===================================== Splitting the Dataset =====================================
+
+X_train, X_test, y_train, y_test = train_test_split(features_x, target_y,test_size = 0.2, random_state = 19)
+
+print(f'''
+Training Rows: {len(X_train)}
+Testing Rows: {len(X_test)}
+''')
+
+
+
+# we only fit on the training dataset and after we have split the dataset into training and testing.
+# If you scale the whole dataset first before splitting, the "Mean" of the Test set leaks into the Training set. This is called "Data Leakage"
+
+scaling_transformer = StandardScaler()
+
+# we apply fit_transform on the training data, which learns the data parameters (e.g: mean, std) and transforms it using that information
+X_train = scaling_transformer.fit_transform(X_train)
+
+# We then transform the test set using the learned parameters from fit_transform in the training set
+X_test = scaling_transformer.transform(X_test)
+
+print(f'''
+Data Type of x_train: {type(X_train)}
+Shape: {X_train.shape}
+
+Data Type of x_test: {type(X_test)}
+Shape: {X_test.shape}
+''')
+
+print("\nData Split and Scaled correctly without leakage!\n")
 
 
 
