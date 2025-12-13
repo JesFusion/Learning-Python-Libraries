@@ -1,3 +1,10 @@
+'''
+TODO:
+1. Add method in PSQLDataGenerator that let's you automatically upload a csv or parquet file directly to the postgreSQL database
+2. Add comments to thoroughly explain code
+3. Add method in PSQLDataGenerator class that intentionally makes data "bad" (ie, NaN values, incorrect data types, etc)
+'''
+
 import random
 import string
 import names
