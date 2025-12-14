@@ -2,6 +2,8 @@
 import random
 from abc import ABC, abstractmethod
 import numpy as np
+import logging
+logging.basicConfig(level = logging.INFO, format = '%(message)s')
 
 the_name, the_balance = "Jesse", 1000
 
@@ -1804,6 +1806,172 @@ except Exception as an_error:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class DBConnect: # DBConnect = DataBase Connect
+
+    """
+    Class that enables one to connect to a database efforlessly
+    """
+
+    def __init__(self, database_URL):
+        self.d_baseURL = database_URL
+        self.is_DB_connected = False
+
+        logging.info(f"\nParent Class Initialized generic connector for {self.d_baseURL}")
+
+
+    def dbase_connect(self): # method for connecting
+
+        self.is_DB_connected = True
+        
+        self.connect_status()
+
+    def dbase_disconnect(self):
+
+        self.is_DB_connected = False
+
+        self.connect_status()
+
+    
+    def connect_status(self):
+
+        if self.is_DB_connected is True:
+
+            logging.info(f"\nParent Class connected to {self.d_baseURL} successfully")
+        
+        elif self.is_DB_connected is False:
+            logging.info("\nParent Class disconnected!")
+
+
+class SQLite(DBConnect):
+
+    """
+    The Child class. It's a database connector, but specific to SQLite.
+    
+    It automatically inherits dbase_connect, dbase_disconnect and connect_status
+    """
+
+    def start_engine(self):
+
+        # the start_engine method is only available in the Subclass. The parent class doesn't inherit it, even though the subclass inherited some methods from the superclass
+
+        logging.info(f"\nInitiating database engine and connecting to SQLite database at {self.d_baseURL}") # subclasses can access the attributes of superclasses
+
+class PostgreSQLDataBase(DBConnect):
+    pass # 'pass' means "I add nothing new, just give me exactly what my parent has."
+
+
+
+# ===================================== Testing the classes =====================================
+
+con_link = "->dbaselink://user:pass@localhost:5432/mydb"
+
+
+# instantiating Postgres class (Subclass)...
+post_dbase = PostgreSQLDataBase(con_link)
+
+post_dbase.dbase_connect()
+
+post_dbase.dbase_disconnect()
+
+
+try:
+    post_dbase.start_engine() 
+    # if you tried to run the code above, an error will be thrown as PostgreSQLDataBase doesn't have the .start_engine() method. However, if we wanted PostgreSQLDataBase to inherit the method, we would make PostgreSQLDataBase a subclass of SQLite, as doing such would make it inherit SQLite's methods and also DBConnect methods (since SQLite is a subclass of DBConnect)
+
+except Exception:
+    pass
+
+finally: # finally is used after a try/except to place code that should run whether an error was thrown during the try/except or not
+
+    PostgreSQLDataBase.__bases__ = (SQLite,) # changing PostgreSQLDataBase superclass to SQLite
+    
+    post_dbase = PostgreSQLDataBase(con_link)
+
+    post_dbase.start_engine() # it should apply the start_engine() method to PostgreSQLDataBase
+
+
+
+# instantiating SQLite database connector (Subclass)...
+
+sqlite_dcon = SQLite(con_link)
+
+sqlite_dcon.start_engine()
+
+sqlite_dcon.dbase_connect()
 
 
 
