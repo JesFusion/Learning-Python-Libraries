@@ -1,0 +1,13 @@
+{
+    The 5 Levels of Panic in logging:
+
+    - DEBUG: Detailed info, variables, "I am inside loop X". Turn this off in production or your disk fills up in an hour.
+
+    - INFO: "System healthy", "Job started", "Job finished". The heartbeat of your app.
+
+    - WARNING: "Disk 90% full", "API slow". Something smells bad, but the car is still driving.
+
+    - ERROR: "Database connection refused", "File not found". A specific operation failed, but the app didn't crash.
+
+    - CRITICAL: The nuclear option. The app is dead or data is being corrupted. Wake up the billionaire (you).
+}
