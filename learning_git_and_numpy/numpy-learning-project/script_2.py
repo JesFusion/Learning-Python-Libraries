@@ -1,7 +1,8 @@
 import numpy as np
 import time
+import logging
 import pandas as pd
-from jesse_custom_code.pandas_file import database_path as d_path, postgre_connect
+from jesse_custom_code.pandas_file import database_path as d_path, postgre_connect, logs_path
 from sqlalchemy import create_engine
 
 a_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -3439,6 +3440,314 @@ Original Array After Mock Modification: {original_array}
 
 Sliced Array After Mock Modification: {sliced_array}
 ''') # original array remained the same
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+logging.basicConfig(
+    filename = f"{logs_path}numpy_status_report.log",
+    filemode = "w",
+    level = logging.DEBUG,
+    format = "%(asctime)s ::: %(levelname)s ::: %(message)s"
+)
+
+
+logging.info("\n===================================== Instantiating learning for numpy 8.3 =====================================\n")
+
+
+d_engine = create_engine(postgre_connect)
+
+
+num_rows = 15500
+
+cGPU_log = pd.DataFrame({
+    "server_id": np.random.randint(1000, 1095, num_rows), # 95 servers
+
+    "temperature_c": np.random.normal(65, 10, num_rows),
+
+    "fan_speed_rpm": np.random.randint(2000, 6000, num_rows), # rotations per minute between 2000-6000
+
+    "incident_flag": np.zeros(num_rows, dtype = int)
+})
+
+
+# Downcasting data types to save memory...
+
+logging.warning("data-types of DataFrame at int64/float64. Downcasting...")
+
+cGPU_log['server_id'] = cGPU_log['server_id'].astype('int16')
+
+cGPU_log['temperature_c'] = cGPU_log['temperature_c'].astype('float16')
+
+cGPU_log['fan_speed_rpm'] = cGPU_log['fan_speed_rpm'].astype('int16')
+
+logging.info(f'''
+{num_rows} of GPU logs generated!
+''')
+
+# ===================================== INGESTING Dataset to PostgreSQL =====================================
+
+
+
+try:
+    logging.warning("Pushing dataset to PostgreSQL server...")
+
+    cGPU_log.to_sql(
+        name = "cluster_gpu_logs",
+        con = d_engine,
+        if_exists = 'replace'
+    )
+
+    logging.info("Data successfully pushed to PostgreSQL server")
+
+except Exception as error:
+
+    logging.error(f"Couldn't push to server. \nCheck out error: {error}")
+
+
+
+
+
+# ===================================== EXTRACTING DATA BACK FOR ANALYSIS =====================================
+
+logging.info("Extracting dataset from server for analysis...")
+
+cpu_logs_dset = pd.read_sql(
+    "SELECT * FROM cluster_gpu_logs LIMIT 11375",
+
+    d_engine
+)
+
+
+logging.info(f'''
+======================================== Sample of Pulled Dataset ========================================
+             
+{cpu_logs_dset.sample(6).to_markdown()}
+''')
+
+
+# Converting columns in dataframe to numpy arrays...
+temp_of_gpu = cpu_logs_dset['temperature_c'].values
+
+speed_of_fan = cpu_logs_dset['fan_speed_rpm'].values
+
+
+logging.debug(f"Data loaded into NumPy arrays.Shape: {temp_of_gpu.shape}")
+
+
+logging.debug(f"Original GPU Temps (First 5): {temp_of_gpu[:5]}")
+
+# let's create a view, just for testing
+array_view = temp_of_gpu[:5]
+
+
+# boolean indexing is used in creating copies
+overheating_GPUs = temp_of_gpu[temp_of_gpu > 80]
+
+num_overheating = len(overheating_GPUs)
+
+
+
+if num_overheating > 4:
+
+    logging.warning(f"Created a copy of overheating servers. Count of {num_overheating} is disturbing")
+
+    logging.info(f"Before hack: {overheating_GPUs[0]}")
+
+    overheating_GPUs[0] = -0.2332
+
+    logging.info(f"After hack: {overheating_GPUs[0]}")
+
+    logging.info(f"------- Analysis of original array (Max: {np.max(temp_of_gpu)}) -------")
+
+    if float(overheating_GPUs[0]) in temp_of_gpu:
+
+        logging.critical("Original Array was modified!")
+
+    else:
+
+        logging.info("Original is untouched. The copy alone was modified")
+
+
+else:
+
+    logging.info(f"Created a copy of overheating servers. Count: ({num_overheating} at bare minimum)")
+
+
+# Arithmetic operations are also used to create copies of an array
+temp_of_gpu_copy = (temp_of_gpu * 0.9517) - 7.226
+
+# we also use the .copy() method to create copies of an array
+arr_copy = temp_of_gpu_copy.copy()
+
+logging.info(f'''Original GPU temp Array ID: {id(temp_of_gpu)}
+Copy GPU temp Array ID: {id(temp_of_gpu_copy)}
+Copy GPU temp Array ID (2): {id(arr_copy)}
+''')
+
+
+
+# ===================================== WHY IS THE KNOWLEDGE OF COPY AND VIEWS CRITICAL? =====================================
+
+# let's say the fan_speed_rpm array takes 7GB of space on the RAM (this is possible, because in real companies we'll be handling massive amounts of data). creating a copy of this array will claim another 7GB of space
+
+fans_overheat = speed_of_fan[temp_of_gpu > 80]
+
+f_heat_count = len(fans_overheat)
+
+
+if f_heat_count > 300:
+
+    logging.critical(f"Overheating fans above maximum treshold! Count: {f_heat_count}")
+
+else:
+
+    logging.warning(f"Overheating fans at {f_heat_count} (below maximum treshold)")
+
+
+# we can't modify the original array when we create a copy, because it'll be the copy that we're modifying
+
+fans_overheat[:] = 6000 # we just modified the copy, not the main array, which was not our intent
+
+num_mod = np.sum(speed_of_fan[temp_of_gpu > 80] == 6000)
+
+if 6000 not in speed_of_fan:
+
+    logging.error(f"Could not change all values in speed_of_fan array to 6000. Detached copy was modified instead. Count of values at 6000: {num_mod}")
+
+else:
+
+    logging.info("Values in speed_of_fan array successfully changed to 6000")
+
+
+# the best way to modify the original array is to cerate a view
+
+# instead of creating a slice/mask and assigning it to a variable, we modify the slice/mask directly
+
+logging.warning("Attempting direct slice assignment...")
+
+speed_of_fan[:] = 999
+
+logging.info(f'''Result: SUCCESS
+First 12 values: {speed_of_fan[:12]}
+''')
+
+
+
+# ===================================== MEMORY MANAGEMENT (IN-PLACE OPERATIONS) =====================================
+
+large_array = np.ones(10_000_000, dtype = 'float64')
+
+logging.info(f'''
+======================================== Memory Management ========================================
+             
+Large Array Size: {(large_array.nbytes) / 1024**2:.2f} MB
+''')
+
+"""
+In-Place Operations:
+
+i. arr = arr + 5
+This creates a temporary copy of the array with the new values, then reassigns the variable name. Peak memory usage is double (2N).
+
+ii. arr += 5
+This is an In-Place operation. It modifies the bits directly in their existing memory address. Peak memory usage is just N.
+"""
+
+# novice method: reassigning a variable name back to an operation performed on it, leads to unwanted assigning of new memory
+start_memory = id(large_array)
+large_array = large_array * 4 # this cerates a new array for the result, meaning a new memory allocation
+
+if id(large_array) != start_memory:
+
+    logging.warning(f"Naive Op: Created a new array in memory (Address changed). Array Size: {(large_array.nbytes) / 1024**2:.2f} MB")
+
+
+# in-place operations enable us to modify an array without having new memory allocated to the result
+start_memory = id(large_array)
+large_array *= 4 # this modifies the array directly
+
+if id(large_array) == start_memory:
+
+    logging.info(f"Optimal Op: Modified data in-place (Address kept). Saved RAM. Array Size: {(large_array.nbytes) / 1024**2:.2f} MB")
+
 
 
 
