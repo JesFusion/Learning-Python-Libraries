@@ -38,3 +38,9 @@ Large Array Size: 76.29 MB
 
 2025-12-15 09:26:26,660 ::: WARNING ::: Naive Op: Created a new array in memory (Address changed). Array Size: 76.29 MB
 2025-12-15 09:26:26,670 ::: INFO ::: Optimal Op: Modified data in-place (Address kept). Saved RAM. Array Size: 76.29 MB
+2025-12-15 12:58:04,454 ::: INFO ::: ===================================== Instantiating learning for numpy 9.1 =====================================
+2025-12-15 12:58:04,549 ::: INFO ::: 10000 entries successfully extracted from the 'cluster_gpu_logs' table in the PostgreSQL server!
+2025-12-15 12:58:04,549 ::: INFO ::: Verification: All three NumPy methods yield the same result.
+2025-12-15 12:58:04,568 ::: INFO ::: Slow Method Time: 0.018547534942626953
+Fast Method Time: 8.320808410644531e-05
+Vectorization is much faster than manual python looping!

@@ -3755,3 +3755,204 @@ if id(large_array) == start_memory:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+logging.basicConfig(
+    filename = f"{logs_path}numpy_status_report.log",
+    filemode = "a",
+    level = logging.INFO,
+    format = "%(asctime)s ::: %(levelname)s ::: %(message)s"
+)
+
+logging.info("===================================== Instantiating learning for numpy 9.1 =====================================")
+
+table = "cluster_gpu_logs"
+num_entries = 10000
+
+
+try:
+
+    gpu_logs_dset = pd.read_sql(
+        f"SELECT temperature_c, fan_speed_rpm FROM {table} LIMIT {num_entries}",
+
+        create_engine(postgre_connect)
+
+    )
+
+    logging.info(f"{num_entries} entries successfully extracted from the '{table}' table in the PostgreSQL server!")
+
+except Exception as error:
+
+    logging.error(f"An error occured while trying to extract dataset from server: {error}")
+
+
+features_matrix = gpu_logs_dset.to_numpy().round(2)
+
+
+
+# ===================================== DOT PRODUCT =====================================
+
+
+# there're three ways of perfroming dot products. Let's extract two arrays from features_matrix...
+
+first_server = features_matrix[0]
+second_server = features_matrix[1]
+
+
+
+# i. THE MANUAL WAY
+dp_1 = ((first_server[0] * second_server)[0] + (first_server[1] * second_server[1]))
+
+# ii. THE NUMPY WAY
+dp_2 = np.dot(first_server, second_server)
+
+# iii. THE MODERN WAY
+dp_3 = first_server @ second_server
+
+
+if (dp_1 + dp_2) == (dp_3 * 2):
+
+    logging.info("Verification: All three NumPy methods yield the same result.")
+
+
+
+# ===================================== MATRIX MULTIPLICATION (BATCH PROCESSING) =====================================
+
+# navive approach: looping thorugh each row and performing a dot product (Imagine doing this for a billion rows)
+
+s_time = time.time()
+slow_scores = []
+
+for a_row in features_matrix:
+
+    score_of_row = 0
+
+    for x in range(len(a_row)):
+
+        score_of_row += a_row[x] * second_server[x]
+
+    slow_scores.append(int(score_of_row))
+
+e_time = time.time()
+
+
+# the ENTERPRISE approach: performing the operation on the whole Matrix at once
+
+v_s_time = time.time()
+fast_scores_vect = features_matrix @ second_server
+v_e_time= time.time()
+
+
+"""
+Even with just 5 rows, the syntax is cleaner
+
+With 1 million rows, the '@' operator uses optimized C/Fortran backends.
+
+The naive loop fights against the Python Global Interpreter Lock (GIL) every iteration.
+"""
+
+slow_time = e_time - s_time
+fast_time = v_e_time - v_s_time
+report = f'''Slow Method Time: {slow_time}
+Fast Method Time: {fast_time}
+'''
+
+if fast_time > slow_time:
+
+    logging.error(f"{report}Vectorization took more time than manual looping!")
+
+elif slow_time > fast_time:
+
+    logging.info(f"{report}Vectorization is much faster than manual python looping!")
+
+
+
+
+
+
