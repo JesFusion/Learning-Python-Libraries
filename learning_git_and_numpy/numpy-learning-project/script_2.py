@@ -1,9 +1,15 @@
+import os
+from dotenv import load_dotenv
 import numpy as np
 import time
 import logging
 import pandas as pd
-from jesse_custom_code.pandas_file import database_path as d_path, postgre_connect, logs_path
+from jesse_custom_code.pandas_file import database_path as d_path, logs_path
 from sqlalchemy import create_engine
+
+load_dotenv()
+
+postgre_connect = os.getenv("POSTGRE_CONNECT")
 
 a_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
