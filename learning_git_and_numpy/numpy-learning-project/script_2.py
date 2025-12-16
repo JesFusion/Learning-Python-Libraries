@@ -3962,3 +3962,199 @@ elif slow_time > fast_time:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+logging.basicConfig(level = logging.DEBUG,format = "<-- %(levelname)s -->\n %(message)s")
+load_dotenv()
+
+array_save_path = os.getenv("NUMPY_SAVE_PATH")
+
+array_a = np.array([
+    [2, 1],
+    [4, 5]
+])
+
+array_b = np.array([100, 260])
+
+
+logging.info(f'''Coefficient Matrix A: 
+{array_a}
+
+Dependent Vector B: {array_b}
+''')
+
+matrix_det = np.linalg.det(array_a)
+
+logging.info(f'''Matrix Determinant: {matrix_det:.2f}
+''')
+
+if abs(matrix_det) <= 1e-9:
+
+    logging.error("Matrix is singular. Cannot solve!")
+
+else:
+
+    eq_sol = np.linalg.solve(array_a, array_b)
+
+    logging.info(f'''
+Optimal Allocation Found:
+
+Cluster A Jobs: {int(eq_sol[0])}
+
+Cluster B Jobs: {int(eq_sol[1])}
+    ''')
+
+    eigenvalues, eigenvectors = np.linalg.eig(array_a)
+
+    logging.info(f"Eigenvalues: {eigenvalues}\nEigenvectors: {eigenvectors}\n")
+
+    u, s, vh = np.linalg.svd(array_a)
+
+    logging.info(f'''
+U: {u}
+
+S: {s}
+
+VH: {vh}
+    ''')
+
+
+# ===================================== ARRAY SAVING =====================================
+
+# let's assume that eq_sol is the weights our model just arrived at after learning from the dataset, and array_a is our configuration
+
+# saving weights and configs...
+
+numpy_file = f"{array_save_path}model_checkpoint.npz"
+
+np.savez(numpy_file, weights = eq_sol, config = array_a)
+
+
+# Simulating a Server Restart
+
+# clearing memory from server...
+del eq_sol # del is the "delete" command in Python. It is a way to "forget" a variable or remove an item from a collection
+del array_a
+
+
+# loading the numpy file back...
+
+loaded_array = np.load(numpy_file)
+
+weights = loaded_array["weights"]
+configs = loaded_array["config"]
+
+logging.info(f'''
+Restored Weights:
+{weights}
+
+Restored Config Shape:
+{configs}
+''')
+
+
+
+
+
+
+
+
