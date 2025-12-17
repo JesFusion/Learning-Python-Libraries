@@ -2,13 +2,10 @@ from fastapi import FastAPI, Body
 import requests
 import json
 import logging
-from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import os
-import requests
 from dotenv import load_dotenv
-import logging
 
 
 
@@ -209,15 +206,14 @@ async def churn_predictor(
 
 
 
-# =====================================  =====================================
-# =====================================  =====================================
+# ===================================== Server =====================================
 
 
 
 app = FastAPI()
 
 @app.get("/")
-async def home_page():
+async def main():
 
     home_output = {
         "Name": "Jesse",
@@ -250,8 +246,8 @@ async def ingest_data(payload_information: dict = Body(...)):
 
 
 
-# ===================================== Section 2 =====================================
 
+# ===================================== Client =====================================
 
 
 
@@ -291,7 +287,6 @@ logging.info(f'''
 ''')
 
 
-# =====================================  =====================================
 
 
 
@@ -346,8 +341,8 @@ logging.info(f'''
 
 
 
-# =====================================  =====================================
-# =====================================  =====================================
+
+# ===================================== Server =====================================
 
 
 
@@ -395,8 +390,7 @@ async def house_validation(HOUSE: InputDataFormat):
 
 
 
-
-
+# ===================================== Client =====================================
 
 
 
@@ -429,7 +423,246 @@ logging.error(f'''
 ''')
 
 
-# =====================================  =====================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== Server =====================================
+
+
+"""
+Nested Models & Complex Structures:
+
+In the enterprise world (and in JSON), data is often deeply nested—like a Russian Doll or a file folder system.
+
+Imagine you aren't just predicting the price of one house. You are Zillow. You need to predict prices for an entire neighborhood at once (Batch Inference). Or, a house object might contain an Address object inside it, which contains a GeoLocation object inside that.
+
+Composition (The "Lego" Approach): Instead of writing one giant validation list, we build small, reusable models (Address, Owner, Features) and plug them into a main model (House).
+
+The Code: We are going to build a Batch Prediction Endpoint. This is standard MLOps practice because running your model once on 50 rows is way faster (Vectorization!) than running it 50 times on 1 row.
+"""
+
+
+belarus = FastAPI()
+
+# ===================================== SUB-MODELS =====================================
+class UserAddress(BaseModel):
+
+    street_location: str
+    city_of_origin: str
+    current_zip_code: str
+
+class ObservableHouseFeatures(BaseModel):
+
+    square_feet: int
+    no_of_rooms: int
+    pool_present: bool = False # Default should be false
+
+# ===================================== PARENT MODEL =====================================
+
+class ListingOfTheHouse(BaseModel):
+
+    the_address: UserAddress
+
+    present_features: ObservableHouseFeatures
+
+    sales_agent: Optional[str] = None
+
+
+# ===================================== BATCH MODEL =====================================
+
+class RequestOfTheBatch(BaseModel):
+
+    id_of_batch: str
+
+    the_items: List[ListingOfTheHouse]
+
+
+
+# ===================================== ENDPOINTS =====================================
+
+@belarus.get("/")
+def is_cools():
+
+    return "Jesse is cool"
+
+
+@belarus.post("/batch_process")
+async def batch_processing(package: RequestOfTheBatch):
+
+    """
+    Receives a batch of houses.
+    FastAPI will loop through EVERY house in the list and validate it 
+    against the HouseListing schema, the Address schema, etc.
+    If even ONE field in ONE house is wrong, the whole batch is rejected.
+    """
+
+    container_list = []
+
+    for a_house in package.the_items:
+
+        assumed_price = (a_house.present_features.square_feet) * 219
+
+        container_list.append({
+            "house_zip": a_house.the_address.current_zip_code,
+
+            "model_prediction": assumed_price
+        })
+
+    output = {
+        "id_of_batch": package.id_of_batch,
+
+        "number_of_processed_items": len(container_list),
+
+        "the_results": container_list
+    }
+
+    return output
+
+
+
+
+    
+
+# ===================================== Client =====================================
+
+
+load_dotenv()
+
+input_data = {
+  "id_of_batch": "batch_001",
+
+  "the_items": [
+    {
+      "the_address": {
+           "street_location": "123 ML St",
+           
+           "city_of_origin": "Lagos",
+           
+           "current_zip_code": "100001" 
+      },
+
+      "present_features": {
+           "square_feet": 1500,
+           
+           "no_of_rooms": 3,
+           
+           "pool_present": True 
+      }
+    },
+
+
+    {
+      "the_address": {
+           "street_location": "456 AI Ave",
+           
+           "city_of_origin": "Abuja",
+           
+           "current_zip_code": "900001" 
+      },
+
+      "present_features": {
+          "square_feet": 3000, 
+          
+          "no_of_rooms": 5
+      },
+
+      'sales_agent': "Njoku Kingsley Anthony"
+    }
+  ]
+}
+
+
+server_response = requests.post(
+    json = input_data,
+
+    url = f"{os.getenv("HOME_URL")}batch_process"
+)
+
+
+print(f'''
+Server Output: {server_response.json()}
+
+Status Code: {server_response.status_code}
+''')
+
+
+
+
+
+
+
+
 
 
 
