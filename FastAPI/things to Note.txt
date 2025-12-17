@@ -14,4 +14,14 @@
     - "--reload" means "Development Mode". 
     - If you change the code file, the server restarts automatically. 
     - NEVER use --reload in production[cite: 292].
+},
+
+{
+    Use Ctrl + C to turn off FastAPI server
+},
+
+{
+    Serialization is converting an object (usually a Dictionary, in Python) to a JSON-Formatted String
+
+    Deserialization is converting a JSON back to an object that a programming language can interact with
 }
