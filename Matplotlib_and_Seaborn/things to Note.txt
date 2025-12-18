@@ -1,0 +1,13 @@
+{
+    Saving Figures (.savefig):
+
+    - Raster (.png, .jpg): These are made of pixels. Think of it like taking a photo of your painting. If you zoom in too much, it gets blurry and pixelated. Use for Web pages, email and quick previews.
+
+    - Vector (.svg, .pdf): These are math instructions. Instead of saving pixels, the file says "Draw a red line from point A to point B." You can zoom in infinitely, and the line will always be perfectly smooth. Use for Academic papers, posters, Adobe Illustrator editing, etc.
+},
+
+{
+    Axes-Level Functions: sns.scatterplot, sns.boxplot, sns.heatmap.
+
+    Figure-Level Functions: sns.relplot, sns.catplot, sns.displot.
+}
