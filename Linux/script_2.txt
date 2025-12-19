@@ -1,0 +1,120 @@
+echo $SHELL - Tekls you what shell you're using
+
+
+whoami - prints out your username
+
+# i. WHAT: Prints the network name of the machine.
+# ii. WHY: Crucial when managing multiple servers so you don't accidentally reboot the wrong one.
+hostname
+
+# 3. EXPLORE THE HIERARCHY
+# i. WHAT: Change directory to the Root (The very bottom of the tree).
+# ii. WHY: To leave your home folder and see the system structure.
+cd /
+
+# i. WHAT: List files to confirm the FHS folders exist.
+# ii. WHY: You should see 'bin', 'etc', 'home', 'usr' here.
+ls
+
+# i. WHAT: Change directory into the configuration folder.
+# ii. WHY: To prove that 'etc' is where config files live.
+cd /etc
+
+# i. WHAT: Change directory BACK to your personal workspace (Home).
+# ii. WHY: ~ is the safest place to be. We always return here after exploring.
+cd ~
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. ESTABLISH BASELINE
+# i. WHAT: Print Working Directory.
+# ii. WHY: Confirming we start at Home (Expected: /home/jesse).
+pwd
+
+# 2. CREATE A DUMMY PROJECT STRUCTURE
+# i. WHAT: Create a nested folder structure 'projects/mlops_v1'.
+# ii. WHY: To give us a "deep" directory to practice jumping into.
+# iii. CHANGE IT?: Changing names changes the path, but logic remains.
+mkdir -p projects/mlops_v1
+
+# 3. THE DEEP DIVE
+# i. WHAT: Change directory into the newly created folder.
+# ii. WHY: Entering our workspace.
+cd projects/mlops_v1
+
+# i. WHAT: Verify location.
+# ii. WHY: Should output /home/jesse/projects/mlops_v1.
+pwd
+
+# 4. THE SYSTEM JUMP (Simulating checking logs)
+# i. WHAT: Teleport immediately to the system log directory.
+# ii. WHY: In production, you often need to check /var/log while working on code.
+cd /var/log
+
+# i. WHAT: List files in 'human-readable' format.
+# ii. WHY: To check if log files are huge (GBs) or empty (KBs) without doing math.
+ls -lh
+
+# 5. THE RETURN (The Efficiency Hack)
+# i. WHAT: Change Directory "Minus" (Previous).
+# ii. WHY: Instantly snaps you back to /home/jesse/projects/mlops_v1 without typing it again.
+# iii. IMPACT: Saves 10-20 seconds of typing. Crucial during emergencies.
+cd -
+
+# 6. VERIFY HIDDEN ASSETS
+# i. WHAT: Go to Home.
+# ii. WHY: Resetting position.
+cd ~
+
+# i. WHAT: List All files including hidden ones.
+# ii. WHY: To see .bashrc or .profile which are usually invisible.
+ls -a
