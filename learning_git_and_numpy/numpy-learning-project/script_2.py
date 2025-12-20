@@ -1,5 +1,7 @@
 import os
 from dotenv import load_dotenv
+import os
+from dotenv import load_dotenv
 import numpy as np
 import time
 import logging
