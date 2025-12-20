@@ -1,0 +1,7 @@
+{
+    Symbols:
+
+    . (Dot): "Right here." Current folder.
+
+    .. (Dot Dot): "One folder back." Parent folder.
+}

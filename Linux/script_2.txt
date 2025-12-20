@@ -118,3 +118,146 @@ cd ~
 # i. WHAT: List All files including hidden ones.
 # ii. WHY: To see .bashrc or .profile which are usually invisible.
 ls -a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. SETUP: CREATE A DEEP STRUCTURE
+# i. WHAT: Create nested directories 'simulation/production/logs' inside Home.
+# ii. WHY: To create a scenario where "Absolute" vs "Relative" navigation feels different.
+# iii. WHAT IF: We change it? We just change the folder names, logic stays the same.
+mkdir -p ~/simulation/production/logs
+
+# 2. THE ABSOLUTE PATH APPROACH
+# i. WHAT: Change directory starting from Root (/) all the way to logs.
+# ii. WHY: This is the "Safe" way. It works no matter where you currently are in the system.
+# iii. MLOps CONTEXT: This is how you would write the path in a Cron job script.
+cd /home/$(whoami)/simulation/production/logs
+
+# i. WHAT: Print where we are.
+# ii. WHY: Confirm we arrived.
+pwd
+
+# 3. THE RELATIVE PATH APPROACH
+# i. WHAT: Go up two levels (back to 'simulation').
+# ii. WHY: We are navigating relative to our current position in 'logs'.
+cd ../..
+
+# i. WHAT: Verify we are now in 'simulation'.
+# ii. WHY: '..' took us to 'production', the second '..' took us to 'simulation'.
+pwd
+
+# 4. TAB COMPLETION DRILL
+# i. WHAT: Go back into production/logs using Tab.
+# ii. WHY: Type 'cd p' -> [TAB] -> 'cd o' -> [TAB].
+# iii. BENEFIT: Prevents typos. If Tab doesn't work, you made a typo or the file doesn't exist.
+cd production/logs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. THE QUICK CHECK
+# i. WHAT: Ask what the 'cat' command is.
+# ii. WHY: I heard someone say "cat the file" and I don't know what that means.
+whatis cat
+
+# 2. THE CHEAT SHEET
+# i. WHAT: Ask 'ls' (list) for its help summary.
+# ii. WHY: I forgot the flag to show hidden files and I don't want to open the full manual.
+ls --help
+
+# 3. THE DEEP DIVE (Interactive)
+# i. WHAT: Open the full manual for the 'rm' (remove) command.
+# ii. WHY: I need to know if 'rm' deletes directories recursively.
+# iii. ACTION: Once inside, type '/recursive' to search for the flag. Press 'q' to exit.
+man rm
