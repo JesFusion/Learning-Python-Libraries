@@ -1,13 +1,14 @@
-from fastapi import FastAPI, Body
+import os
 import requests
 import json
+import joblib
 import logging
+import numpy as np
+from enum import Enum
 from pydantic import BaseModel, Field
+from fastapi import FastAPI, Body
 from typing import List, Optional
-import os
 from dotenv import load_dotenv
-
-
 
 
 app = FastAPI()
@@ -206,7 +207,7 @@ async def churn_predictor(
 
 
 
-# ===================================== Server =====================================
+# ===================================== API =====================================
 
 
 
@@ -342,7 +343,7 @@ logging.info(f'''
 
 
 
-# ===================================== Server =====================================
+# ===================================== API =====================================
 
 
 
@@ -497,7 +498,7 @@ logging.error(f'''
 
 
 
-# ===================================== Server =====================================
+# ===================================== API =====================================
 
 
 """
@@ -657,6 +658,142 @@ Status Code: {server_response.status_code}
 ''')
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== API =====================================
+
+
+
+load_dotenv()
+
+# model_save_path = os.getenv("MODEL_SAVE_PATH")
+model_save_path = '/home/jesfusion/Documents/ml/ML-Learning-Repository/Saved_Datasets_and_Models/Models/'
+
+# loading the model and scaler
+diamond_model = joblib.load(f"{model_save_path}KNN/diamond_model.pkl")
+
+diamond_scaler = joblib.load(f"{model_save_path}KNN/diamond_scaler.pkl")
+
+diamond_api = FastAPI()
+
+# defining input data schema...
+
+class CutType(str, Enum):
+    FAIR = "fair"
+    GOOD = "good"
+    IDEAL = "ideal"
+
+
+class DiamondInputSchema(BaseModel):
+
+    carat: float
+
+    cut: CutType # cut must be either fair, good or ideal
+
+
+# defining our endpoint and it's function
+@diamond_api.post("/predict/price")
+async def diamond_price_prediction(diamond: DiamondInputSchema):
+
+    c_string_conversion = {
+        "fair": 0,
+        "good": 1,
+        "ideal": 2
+    }
+
+    carat_weight = diamond.carat
+
+    # we'll map cut weight to it's value
+    cut_number = c_string_conversion.get(diamond.cut)
+
+    # convert to an array and pass it to our scaler, who can put it in the language our model understands
+    input_val_array = np.array([[carat_weight, cut_number]])
+
+    model_feed = diamond_scaler.transform(input_val_array)
+
+    # collecting model answer and passing back to client
+    model_answer = float(diamond_model.predict(model_feed)[0])
+
+    return model_answer
+
+
+
+
+
+
+# ===================================== Client =====================================
+
+load_dotenv()
+
+# let's simulate a user that wants to make use of our API
+carat_weight = input("Enter a Carat Weight: ")
+
+c_rating = input("Enter a Carat Rating: ").lower() # all letters in c_rating will be converted to lowercase, to prevent pydantic from throwing an error
+
+user_input = {
+    'carat': carat_weight, # carat_weight is converted to a float, because it's pydantic expects
+
+    'cut': c_rating
+}
+
+# sending user input to model through the API...
+d_pred_api_response = requests.post(url = f"{os.getenv("HOME_URL")}predict/price", json = user_input).json()
+
+# printing out AI Response
+print(f"CrystalClear AI Predicts that diamond is worth ${d_pred_api_response}")
 
 
 
