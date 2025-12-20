@@ -1,5 +1,8 @@
+import os
+import joblib
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sklearn.datasets import load_iris
 from jesse_custom_code.pandas_file import postgre_connect, PDataset_save_path as psp, dataset_save_path
@@ -1131,6 +1134,101 @@ category = ["No", "Yes"] # let's map the groups to a list. It'll help us underst
 print(f'''
 Will the {house_data[0][1]}-year old house of {house_data[0][0]} sqft sell fast? {category[int(sale_pred[0])]}
 ''')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+load_dotenv()
+
+dbase_string = os.getenv("POSTGRE_CONNECT")
+model_save_path = os.getenv("MODEL_SAVE_PATH")
+
+# extracting dataset from postgre server
+database_engine = create_engine(dbase_string)
+
+diamond_sales_dataset = pd.read_sql(
+    sql = "SELECT carat_weight, cut_rating, price_usd FROM diamond_sales LIMIT 60700",
+
+    con = database_engine    
+)
+
+# using sklearn's OridinalEncoder to convert the "cut_rating" categorical column to a numerical one with order
+diamond_sales_dataset["cut_rating"] = OrdinalEncoder(categories = [['Fair', 'Good', 'Ideal']]).fit_transform(diamond_sales_dataset[['cut_rating']])
+
+
+# splitting dataset into training and testing
+features_x = diamond_sales_dataset.drop(["price_usd"], axis = 1)
+
+target_y = diamond_sales_dataset['price_usd']
+
+
+X_train, X_test, y_train, y_test = train_test_split(features_x, target_y,test_size = 0.2, random_state = 19)
+
+
+# scaling training and testing features
+
+"""
+We .fit_transform() on the training set, and use the learned parameters to .transform() the test set
+"""
+scaling_algo = StandardScaler()
+
+X_train = scaling_algo.fit_transform(X_train.to_numpy()) # I added .to_numpy() because I kept getting this warning when I was building the API:
+# /home/jesfusion/Documents/ml/ml-env/lib/python3.12/site-packages/sklearn/utils/validation.py:2749: UserWarning: X does not have valid feature names, but StandardScaler was fitted with feature names
+
+X_test = scaling_algo.transform(X_test.to_numpy())
+
+
+# training KNeighborsRegressor on dataset
+
+knnR_model = KNeighborsRegressor(n_neighbors = 5).fit(X_train, y_train)
+
+# saving model and scaler
+# the model only understands what the scaler is saying, like it's own personal translator.
+# If you passed unscaled data or data not scaled by the models own scaler, you'll simply be speaking jibberish to the model
+
+# let's save the model and it's scaler (personal assistant)
+
+joblib.dump(knnR_model, f"{model_save_path}/KNN/diamond_model.pkl")
+
+joblib.dump(scaling_algo, f"{model_save_path}/KNN/diamond_scaler.pkl")
+
 
 
 
