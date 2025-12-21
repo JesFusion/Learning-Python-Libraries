@@ -407,3 +407,151 @@ rm -rf downloads
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. SETUP: GENERATE DUMMY DATA
+# i. WHAT: Create a CSV file with a header and 100 rows of data.
+# ii. WHY: We need a file with enough content to practice 'head' vs 'tail'.
+echo "id,model_name,accuracy" > training_data.csv
+for i in {1..100}; do echo "$i,model_v$i,$RANDOM"; done >> training_data.csv
+
+# 2. THE HEAD INSPECTION
+# i. WHAT: View the first 5 lines of the CSV.
+# ii. WHY: To verify the column names (id, model_name) before we try to load it into Pandas.
+# iii. CHANGE IT?: Change -n to 20 to see more rows.
+head -n 5 training_data.csv
+
+# 3. THE TAIL INSPECTION
+# i. WHAT: View the last 3 lines.
+# ii. WHY: To see the most recent data points added (should be roughly id 98, 99, 100).
+tail -n 3 training_data.csv
+
+# 4. THE CAT DISASTER (SIMULATED)
+# i. WHAT: Dump the whole file.
+# ii. WHY: Since our file is only 100 lines, this is safe. 
+# iii. NOTE: Notice how it floods your terminal history. Imagine if this was 1 million lines.
+cat training_data.csv
+
+# 5. THE LESS EXPERIENCE
+# i. WHAT: Open the file in the pager.
+# ii. WHY: Practice navigating without cluttering the terminal history.
+# iii. ACTION: Press 'q' to exit after running this.
+less training_data.csv
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. CREATE A BUGGY SCRIPT
+# i. WHAT: Create a python file with a deliberate syntax error (missing parenthesis).
+# ii. WHY: To simulate a broken production script.
+echo "print('Starting Model Training..." > broken_model.py
+
+# 2. VERIFY THE BUG
+# i. WHAT: Run the script to see it fail.
+# ii. WHY: Confirming the error message exists.
+python3 broken_model.py
+# Expected Output: SyntaxError: EOL while scanning string literal
+
+# 3. THE FIX (Interactive Step)
+# i. WHAT: Open the file in the nano editor.
+# ii. WHY: We need to close the quote and parenthesis.
+nano broken_model.py
+
+# --- INSTRUCTIONS INSIDE NANO ---
+# A. Use arrow keys to go to the end of the line.
+# B. Add: ')'   (So it looks like: print('Starting Model Training...'))
+# C. Press Ctrl+O (Save).
+# D. Press Enter (Confirm filename).
+# E. Press Ctrl+X (Exit).
+# -------------------------------
+
+# 4. VERIFY THE FIX
+# i. WHAT: Run the script again.
+# ii. WHY: To confirm our manual edit worked.
+python3 broken_model.py
+# Expected Output: Starting Model Training...
+
+
+
+
