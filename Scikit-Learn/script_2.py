@@ -12,6 +12,12 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import accuracy_score, mean_squared_error, r2_score
+
+
+
+
 
 
 # ===================================== Sourcing Data =====================================
@@ -1230,6 +1236,157 @@ joblib.dump(knnR_model, f"{model_save_path}/KNN/diamond_model.pkl")
 joblib.dump(scaling_algo, f"{model_save_path}/KNN/diamond_scaler.pkl")
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+random_number_generator = np.random.RandomState(42)
+
+
+# generating features and targets
+features_X = random_number_generator.rand(1230, 1) # 1230 rows, 1 column
+
+targets_Y = (features_X > 0.51).astype(int).ravel()
+
+actual_label = targets_Y[:1100]
+
+predicted_label = actual_label.copy()
+
+errors = random_number_generator.choice(1100, 50, replace = False)
+
+predicted_label[errors] = 1 - predicted_label[errors]
+
+# accuracy_score gives the percentage of correct model prediction
+model_accuracy = accuracy_score(actual_label, predicted_label)
+
+
+
+
+# ===================================== LINEAR REGRESSION AND REGRESSION METRICS =====================================
+
+num_entries = 57600
+
+side_X = 14.893 * random_number_generator.rand(num_entries, 1)
+
+random_noise = random_number_generator.randn(num_entries, 1) * 2157.23
+
+side_Y = (2319.64 * side_X) + 26575.31 + random_noise
+
+# Splitting x and y into train and test sets...
+X_train, X_test, y_train, y_test = train_test_split(side_X, side_Y,test_size = 0.25, random_state = 19)
+
+
+# model Instantiation
+LR_model = LinearRegression()
+
+# we fit the model on the training sets
+LR_model.fit(X_train, y_train)
+
+# fetching out the model prediction on our test set
+model_prediction = LR_model.predict(X_test)
+
+
+# Evaluation metrics in Regression, MSE & R2:
+""" 
+Mean Squared Error (MSE): 
+We take the distance between the real value and your prediction (the "error"), square it, and then average all those squared errors.
+Why square it? Two reasons:
+1. It removes negative signs (an error of -5 is just as bad as +5).
+2. It punishes big mistakes heavily. Being off by 10 is way worse than being off by 5 (10^2 = 100 vs 5^2 = 25). It screams at the model to fix the big outliers.
+
+
+
+R-squared (R^2):
+MSE gives you a number like "24500.5", which is hard to interpret. Is that good? Bad? R^2 (Coefficient of Determination) gives you a score between 0 and 1 (usually) that represents "How much of the variance in the target did the model explain?"
+- 1.0: The model explains 100% of the patterns. Perfect prediction.
+- 0.0: The model is no better than just guessing the average value for everyone.
+"""
+
+# fetching the Mean Squared Error and R-squared Score...
+MSE = mean_squared_error(y_true = y_test, y_pred = model_prediction)
+
+R2 = r2_score(y_true = y_test, y_pred = model_prediction)
+
+
+print(f'''
+======================================== Regression Results ========================================
+
+Learned Coefficient (Slope): {LR_model.coef_[0][0]:.2f}
+
+Learned Intercept: {LR_model.intercept_[0]:.2f}
+
+Mean Squared Error (MSE): {MSE:.2f}
+
+R-squared Score: {R2:.4f}
+
+{model_accuracy}
+''')
 
 
 
