@@ -488,3 +488,216 @@ plt.show()
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# creating dataset to be used
+dataset = pd.DataFrame({
+    'Epoch': list(range(1, 51)) * 2,
+
+    'Loss': np.concatenate([
+        np.linspace(2.0, 0.5, 50) + np.random.normal(0, 0.1, 50),
+        np.linspace(1.5, 0.2, 50)
+    ]),
+
+    'Model': np.random.choice(['Model A', 'Model B'], size = 100, p = [0.67, 0.33])
+})
+
+
+
+# ===================================== ANALYSIS =====================================
+
+sns.set_theme(style = 'darkgrid')
+
+sns.set_context('notebook')
+
+# plt.figure(figsize = (8, 5))
+
+figure, axes = plt.subplots(figsize = (8, 5))
+
+
+"""
+sns.lineplot() is used to visualize the relationship between two variables by drawing a line across data points
+
+
+Parameters:
+- data: The dataset (typically a pandas DataFrame) containing the variables to plot.
+
+- x, y: The names of the columns in data to be plotted on the horizontal and vertical axes.
+
+- hue: A grouping variable that produces lines with different colors to represent different categories (e.g., different models).
+
+- ax: The specific matplotlib Axes object where the plot will be drawn, useful for placing plots in a grid or subplots. 
+
+
+- style: Assigns different line patterns (e.g., dashed vs. solid) to categories. Using the same variable for both hue and style makes the plot more accessible for colorblind users.
+
+- markers: Adds distinct dots/shapes at each data point to make specific values easier to identify.
+
+- errorbar: Controls how uncertainty is displayed (e.g., standard deviation sd or confidence interval ci).
+
+- palette: Specifies a custom color scheme for the hue groups. 
+
+
+sns.lineplot(
+    data = dataset,
+    x = 'Epoch',
+    y = 'Loss',
+    hue = 'Model',
+    style = 'Model',     # Adds different line styles (solid/dashed) for each model
+    markers = True,      # Adds dots at each data point
+    errorbar = 'sd',     # Shows standard deviation instead of 95% CI
+    palette = 'viridis', # Uses a specific color theme
+    ax = axes
+)
+
+"""
+
+
+sns.lineplot(
+    data = dataset,
+    x = 'Epoch',
+    y = 'Loss',
+    hue = 'Model',
+    ax = axes,
+)
+
+# adding a title on the figure
+figure.suptitle("Analyst View (Darkgrid)")
+
+# saving the figure...
+# figure.savefig('theme_analyst.svg', format = 'svg', bbox_inches = 'tight')
+
+
+plt.clf() # this clears the figure (w white screen is shown, with nothing plotted inside)
+
+
+
+# ===================================== PRESENTATION =====================================
+
+
+# White looks better for slides/presentations
+sns.set_theme(style = 'whitegrid')
+
+# context = 'talk' makes lines thicker and fonts bigger so that everyone including those at the back can see it when you're making a presentation
+sns.set_context(context = 'talk', font_scale = 1.1)
+
+"""
+You can change the figure size after it has been created by using the set_size_inches() method on your figure object.
+
+1. figure.set_size_inches(width, height): 
+This is the most common way to change both dimensions at once
+
+2. figure.set_figwidth(value):
+Use this to change only the width.
+
+3. figure.set_figheight(value):
+Use this to change only the height.
+"""
+
+figure.set_size_inches(w = 8, h = 5)
+
+sns.lineplot(
+    data = dataset,
+    x = 'Epoch',
+    y = 'Loss',
+    hue = 'Model',
+    palette = 'viridis',
+    # ax = axes,
+    style = 'Model'
+)
+
+sns.despine() # this is used to remove axes lines, to provide a more modern look!
+
+# adding an over-head title...
+figure.suptitle("Executive View (Clean)")
+
+# saving the figure...
+# figure.savefig('theme_executive.svg', format = 'svg', bbox_inches = 'tight')
+
+
+# displaying the figure
+plt.show()
+
+
+
+
+
+
+
+
