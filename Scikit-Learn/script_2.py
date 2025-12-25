@@ -3,17 +3,23 @@ import joblib
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 from sqlalchemy import create_engine
 from sklearn.datasets import load_iris
 from jesse_custom_code.pandas_file import postgre_connect, PDataset_save_path as psp, dataset_save_path
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from jesse_custom_code.build_database import PSQLDataGenerator
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder, OrdinalEncoder, PolynomialFeatures
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import OrdinalEncoder, OneHotEncoder
-from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.metrics import accuracy_score, mean_squared_error, r2_score
+
+
+
 
 
 
@@ -1388,6 +1394,224 @@ R-squared Score: {R2:.4f}
 {model_accuracy}
 ''')
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+np.random.seed(20)
+
+
+# generating non-linear data to practice with
+feature_x = np.sort(5 * np.random.rand(40, 1), axis = 0)
+
+target_y = np.sin(feature_x).ravel()
+
+
+# adding noise to the data
+target_y[::5] += 3 * (0.5 - np.random.rand(8))
+
+target_y = target_y + np.random.normal(0, 0.1, feature_x.shape[0])
+
+
+# we define a list of models.
+# each element is a tuple containing model name, model and degree
+the_models = [
+    (
+        "Linear Model (Underfit)",
+        LinearRegression(),
+        1
+    ),
+
+    (
+        "Polynomial Model (Overfit)",
+        LinearRegression(),
+        15
+    ), # degree is set to 15 to make model overfit
+
+    (
+        "Ridge (L2)",
+        Ridge(alpha = 1.0),
+        15
+    ),
+
+    (
+        "Lasso (L1)",
+        Lasso(alpha = 0.1),
+        15
+    ),
+
+    (
+        "ElasticNet (Hybrid)",
+        ElasticNet(
+            alpha = 0.1,
+            l1_ratio = 0.5
+        ),
+        15
+    )
+]
+
+
+# let's plot the raw data so we can compare our various model output to it
+figure, axes = plt.subplots(figsize = (14, 10))
+
+axes.scatter(feature_x, target_y, c = 'black', label = "Noisy Data")
+
+
+# specifying colors of each line to be plotted on the canvas
+the_colors = [
+    'red',
+    'green',
+    'blue',
+    'orange',
+    'purple'
+]
+
+# looping through each model and having them trained
+for x, (model_name, model_type, model_degree) in enumerate(the_models):
+
+    # we create a list of chained steps from data pre-preprocessing to training on model
+    pipeline_steps = [
+        (
+            'poly',
+            PolynomialFeatures(
+                degree = model_degree,
+                include_bias = False
+            )
+        ),
+
+        (
+            'the_scaler',
+            StandardScaler()
+        ),
+
+        (
+            'the_model',
+            model_type
+        )
+    ]
+
+    # create a pipeline from the list
+    training_pipeline = Pipeline(pipeline_steps)
+
+
+    # we fit using the pipeline. Data is pre-processed: 
+    # 1. Multiple columns are added using PolynomialFeatures() based on the degree specified
+    # 2. Features are scaled and then passed to the model for training
+    training_pipeline.fit(feature_x, target_y)
+
+
+    # generating random test data
+    x_axis = np.linspace(0, 5, 100).reshape(-1, 1)
+
+    # creating y_axis using predictions from the model
+    y_axis = training_pipeline.predict(x_axis)
+
+
+    axes.plot(
+        x_axis, y_axis,
+        c = the_colors[x],
+        linewidth = 2,
+        label = f"{x + 1}. {model_name}"
+    )
+
+
+    if hasattr(
+        training_pipeline.named_steps['the_model'],
+
+        'coef_'
+    ):# if the model object has an attribute names 'coef_', run this code:
+        
+        # fetch the coefficient value
+        coefficients = training_pipeline.named_steps['the_model'].coef_
+
+        print(f'''
+================================== {model_name} ==================================
+
+List of coefficients: {coefficients}
+
+Sum of Weights: {np.sum(np.abs(coefficients)):.2f}
+
+Zeroed-Out Weights: {np.sum(coefficients == 0)}
+    ''')
+
+
+# adding finishing touches to the canvas:
+# Main title, x and y labels and legend
+figure.suptitle("Polynomial Regression: The Full Battle (inc. ElasticNet)")
+
+axes.set_xlabel("Input Feature (X)")
+
+axes.set_ylabel("Target (y)")
+
+axes.legend()
+
+# .ylim() limits the Y-axis view.
+# The 'Polynomial (Overfit)' model might shoot up to y = 1000 at the edges, so we crop the view so we can actually see the sine wave details.
+
+plt.ylim(-2, 3)
+plt.close()
+plt.show()
 
 
 
