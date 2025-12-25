@@ -5,7 +5,7 @@ import joblib
 import logging
 import numpy as np
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from fastapi import FastAPI, Body
 from typing import List, Optional
 from dotenv import load_dotenv
@@ -798,6 +798,146 @@ print(f"CrystalClear AI Predicts that diamond is worth ${d_pred_api_response}")
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== API =====================================
+
+
+
+
+API = FastAPI()
+
+class FeaturesOfHouse(BaseModel):
+
+    square_feet: float = Field(gt = 0, description = "Total Area of House")
+
+    number_of_rooms: int = Field(gt = 0, description = "Number of rooms in the House")
+
+    @model_validator(mode = "after") # this runs after incoming data has been allowed to passthrough by the pydantic bodyguard
+    def room_check_density(self):
+
+        # in this function, we throw an error if the square feet of the incoming house is unreasonable
+
+        house_area = self.square_feet
+
+        house_rooms = self.number_of_rooms
+
+        if (house_area / house_rooms) < 50:
+
+            error = f"Impossible Data: {house_rooms} rooms cannot fit in {house_area} square feet."
+
+            raise ValueError(error)
+        
+        return self
+
+
+@API.post("/predict/house")
+async def predict_house_price(the_house: FeaturesOfHouse):
+
+    price = (the_house.square_feet ** 2) / (the_house.number_of_rooms * 58.257)
+
+    output = {
+        "status": "valid",
+
+        "density": the_house.square_feet / the_house.number_of_rooms,
+
+        "price": f"${price:.2f}"
+    }
+
+    return output
+
+
+
+
+
+# ===================================== Client =====================================
+
+
+load_dotenv()
+
+user_input = {
+    'square_feet': 7500,
+
+    'number_of_rooms': 4
+}
+
+# sending user input to model through the API...
+d_pred_api_response = requests.post(url = f"{os.getenv("HOME_URL")}predict/house", json = user_input).json()
+
+# printing out AI Response
+print(f"API Response: {d_pred_api_response}")
 
 
 
