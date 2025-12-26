@@ -2181,3 +2181,225 @@ the_model.model_save()
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== OVERRIDING & EXTENDING =====================================
+
+
+class SomeRandomClass:
+
+    '''
+    The Parent Class. 
+    It defines the basic structure of any model.
+    '''
+
+    def __init__(self, particular_name):
+
+        # the parent class handles the name attribute
+        self.name = particular_name
+        self.is_trained = False
+
+        print(f'''
+[SomeRandomClass] ::: Initialized Random Model (Class): {self.name}
+        ''')
+
+    
+    
+    def model_train(self):
+        # a generic placeholder method
+        
+        print(f'''
+[SomeRandomClass --> model_train] ::: Generic Training Loop. Not much done
+              
+2 + 2 = {2 + 2}
+        ''')
+
+        self.is_trained = True
+
+
+
+
+    
+class DeepLearningClass(SomeRandomClass):
+    """
+    The Child Class.
+    It overrides 'train' and extends '__init__'.
+    """
+
+    def __init__(self, NN_name, NN_layers):
+        
+        # what super().__init__() does is that it inherits it's parent's attributes 
+
+        # we tell the class to replace particular_name with NN_name
+        super().__init__(particular_name = NN_name) # self.name = NN_name
+
+        self.model_layers = NN_layers
+
+        print(f'''
+[DeepLearningClass] ::: Added {self.model_layers} layers to the architecture
+        ''')
+
+    
+    def model_train(self):
+        # we overridde .model_train() method in the SomeRandomClass class, inserting our own new logic
+        print(f'''
+[DeepLearningClass --> model_train] ::: Spinning up GPU for {self.name}...
+
+[DeepLearningClass --> model_train] ::: Backpropagation in Progess...
+        ''')
+
+        self.is_trained = True
+
+
+
+
+
+# ===================================== MULTIPLE INHERITANCE & MRO =====================================
+
+class FastAIClass:
+
+    """
+    Docstring for StupidCLass1
+    """
+
+    def ran_func(self):
+
+        print('''
+[FastAIClass] ::: Saving Logs to text file
+        ''')
+
+
+class FavourIsCool:
+
+    """
+    Docstring for FavourIsCool
+    """
+
+    def ran_func(self):
+
+        print('''
+[FavourIsCool] ::: Saving Data to PostgreSQL DataBase...
+        ''')
+
+
+class DataPipeline(FastAIClass, FavourIsCool):
+
+    """
+    The Child Class. inherits from BOTH FastAIClass and FavourIsCool.
+    Notice the order: (FastAIClass, FavourIsCool)
+    """
+
+    pass # do nothing. just chill
+
+
+
+# ===================================== SCRIPT EXECUTION =====================================
+
+# instantiating the `DeepLearningClass` class
+ai_model = DeepLearningClass(NN_name = "YOLOv1", NN_layers = 12)
+
+print(ai_model.is_trained) # is_trained = False
+
+# calling the method that was overridden
+ai_model.model_train()
+
+print(ai_model.is_trained) # is_trained = True
+
+
+training_pipeline = DataPipeline()
+
+# since both parent classes [FastAIClass & FavourIsCool] have the .ran_func() method, python looks from Left-to-Right and runs the FastAIClass version of the .ran_func() method first
+training_pipeline.ran_func()
+
+# we debug MRO cases using the .mro() method
+
+print(DataPipeline.mro()) # [<class '__main__.DataPipeline'>, <class '__main__.FastAIClass'>, <class '__main__.FavourIsCool'>, <class 'object'>]
+
+
+
+
+
+
+
+
