@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sklearn.datasets import load_iris
 from jesse_custom_code.pandas_file import postgre_connect, PDataset_save_path as psp, dataset_save_path
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
@@ -15,8 +15,8 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder, O
 from sklearn.model_selection import train_test_split
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
-from sklearn.metrics import accuracy_score, mean_squared_error, r2_score
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, LogisticRegression, ElasticNet
+from sklearn.metrics import accuracy_score, mean_squared_error, mean_absolute_error, r2_score
 
 
 
@@ -1612,6 +1612,269 @@ axes.legend()
 plt.ylim(-2, 3)
 plt.close()
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+database_engine = create_engine(os.getenv("POSTGRE_CONNECT"))
+
+with database_engine.connect() as connection:
+
+    house_prices_dataset = pd.read_sql(
+
+        text(
+            "SELECT * FROM house_prices"
+        ),
+
+        con = connection
+    )
+
+    exam_results_dataset = pd.read_sql(
+
+        text(
+            "SELECT * FROM exam_results",
+        ),
+
+        con = connection
+    )
+
+
+# ===================================== REGRESSION METRICS (MAE/RMSE) =====================================
+
+feature_x_1 = house_prices_dataset[['size']].values
+
+target_y_1 = house_prices_dataset[['price']].values
+
+X_train_1, X_test_1, y_train_1, y_test_1 = train_test_split(
+    feature_x_1,
+    target_y_1,
+    test_size = 0.22,
+    random_state = 19
+)
+
+model_1 = LinearRegression()
+
+model_1.fit(
+    X_train_1,
+    
+    y_train_1
+)
+
+y_pred_1 = model_1.predict(X_test_1)
+
+
+# MAE calculates the absolute difference between the prediction and the truth, then averages it
+model_1_MAE = mean_absolute_error(y_true = y_test_1, y_pred = y_pred_1)
+
+model_1_RMSE = np.sqrt( # RMSE is the square root of MSE, so we use np.sqrt()
+    mean_squared_error(
+        y_true = y_test_1,
+
+        y_pred = y_pred_1
+    )
+)
+
+# setting up our figure and canvas
+figure, (axes_1, axes_2) = plt.subplots(nrows = 1, ncols = 2, figsize = (10, 6))
+
+# Adding a custom window title
+figure.canvas.manager.set_window_title("MAE, RMSE & Logistic Regression")
+
+axes_1.scatter(
+    X_train_1[::20],
+
+    y_train_1[::20],
+
+    c = 'black',
+
+    label = 'Original Data'
+)
+
+axes_1.plot(
+    X_test_1,
+    y_pred_1,
+    c = 'blue',
+    label = f'Model Prediction.\nMAE: {model_1_MAE:.2f}, RMSE: {model_1_RMSE:.2f}'
+)
+
+axes_1.set_title("MAE and RMSE in Regression")
+
+axes_1.set_xlabel("House Size")
+
+axes_1.set_ylabel("Price of House")
+
+axes_1.legend()
+
+
+
+
+
+# ===================================== LOGISTIC REGRESSION (LINEAR REGRESSION WITH SIGMOID) =====================================
+
+# Logistic Regression is simply just Linear Regression with it's output passed to a Sigmoid Function
+# the function takes a continous value from the model and squashes the value between 0 and 1.
+# Values greater that 0.5 is in one class, while values less than 0.5 is in another
+# This is called BINARY CLASSIFICATION
+
+feature_x_2 = exam_results_dataset[['hours']].values
+
+target_y_2 = exam_results_dataset['result'].values
+
+X_train, X_test, y_train, y_test = train_test_split(feature_x_2, target_y_2,test_size = 0.22, random_state = 19)
+
+# we instantiate a LogisticRegression model and train it on our data
+LGR_model = LogisticRegression(random_state = 19)
+
+LGR_model.fit(X_train, y_train)
+
+axes_2.scatter(
+    X_train,
+    y_train,
+    c = 'gray',
+    alpha = 0.2,
+    label = 'Student Data (0=Fail, 1=Pass)'
+)
+
+x_test_r = np.linspace(0, 12, 300).reshape(-1, 1)
+
+model_prediction = LGR_model.predict_proba(x_test_r)[:, 1]
+
+axes_2.plot(
+    x_test_r,
+    model_prediction,
+    c = 'red',
+    linewidth = 3,
+    label = 'Sigmoid Probability Curve'
+)
+
+# drawing a line at the Decision Boundary (0.5) for better clarity
+axes_2.axhline(
+    y = 0.5, # this draws a straight line at the 0.5 point on the y-axis
+    color = 'green',
+    linestyle = '--',
+    label = 'Decision Boundary (0.5)'
+)
+
+axes_2.set_xlabel("Hours Studied")
+
+axes_2.set_ylabel("Probability of Passing")
+
+axes_2.set_title("Logistic Regression: The Sigmoid Function")
+
+axes_2.legend()
+
+figure.suptitle("""Left: Linear Regression Model with MAE & RMSE metrics shown
+Right: Logistic Regression Plot""",
+    fontsize = 16,
+)
+
+# .subplots_adjust() helps us push the subplots down, so they don't touch the suptitle
+figure.subplots_adjust(
+    top = 0.83, # this pushes the top edge of the subplots to 83% of the figure's height
+    bottom = 0.1 # this pushes the bottom edge of the subplots to 10% of the figure's height
+)
+
+plt.show()
+
+
+
 
 
 
