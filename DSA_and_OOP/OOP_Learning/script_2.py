@@ -1,4 +1,5 @@
 # Procedural Programming (a simple list of instructions) gets messy and hard to maintain ("spaghetti code") because data is global and separate from the functions that use it.
+import time
 import random
 from abc import ABC, abstractmethod
 import numpy as np
@@ -2396,6 +2397,285 @@ training_pipeline.ran_func()
 
 print(DataPipeline.mro()) # [<class '__main__.DataPipeline'>, <class '__main__.FastAIClass'>, <class '__main__.FavourIsCool'>, <class 'object'>]
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== DUCK TYPING (The Flexible Way) =====================================
+
+'''
+Two classes with no relationship with each other, only that they have a method with the same name. You can call this method from each class, even if they're not related
+'''
+
+class AmazonS3Connect:
+
+    """
+    Simulates connecting to Amazon S3.
+    """
+
+    def __init__(self, name_of_bucket):
+        
+        self.b_name = name_of_bucket
+
+    def data_retrieval(self):
+
+        print(f"[AmazonS3Connect] ::: Connecting to bucket '{self.b_name}'...")
+
+        time.sleep(2)
+
+        print("[AmazonS3Connect] ::: Download Complete")
+
+        return np.linspace(12, 34, 3).round(2).tolist()
+
+
+class DeviceLocalConnect:
+
+    """
+    Simulates reading a CSV from your Laptop.
+    """
+
+    def __init__(self, path):
+        
+        self.path_to_file = path
+
+    def data_retrieval(self):
+
+        print(f'''
+[DeviceLocalConnect] ::: Opening Local file '{self.path_to_file}'...
+        ''')
+
+        return np.random.randint(12, 34, size = (3)).round(2).tolist()
+
+
+def ingestion_pipeline(connection_interface: object):
+
+    """
+    This function represents your Data Pipeline.
+    
+    CRITICAL: It does NOT check 'if isinstance(connection_interface, AmazonS3Connect)'.
+    It simply assumes 'connection_interface' has a .data_retrieval() method.
+    This is Duck Typing.
+    """
+
+    print(f"\n===================================== Starting Ingestion with {connection_interface.__class__.__name__} =====================================\n")
+
+    input_data = connection_interface.data_retrieval()
+
+    print(f"Pipeline received Data: {input_data}\n")
+
+    return input_data
+
+
+
+# ===================================== POLYMORPHISM WITH INHERITANCE (The Strict Way) =====================================
+
+"""
+Two classes that inherits from a base class, with their different versions of overriden methods. Calling each class method makes each class run it's own method version
+"""
+
+class ClassBase:
+
+    """
+    The Parent. Defines the 'Interface' that all children must have.
+    """
+
+    def __init__(self, the_name):
+
+        self.name = the_name
+
+        self.model_accuracy = 0.0
+
+    
+    def model_train(self, the_data):
+
+        # children are expected to override this
+
+        print(f'''
+[ClassBase --> {self.name}] ::: Default training...
+        ''')
+        
+    
+    def model_evaluation(self):
+
+        # returns a random accuracy for simulation
+
+        self.model_accuracy = random.uniform(0.70, 0.99)
+
+        print(f'''
+[ClassBase --> {self.name}] ::: Accuracy: {self.model_accuracy:.4f}
+        ''')
+
+        return self.model_accuracy
+    
+
+class RandomForestModel(ClassBase):
+    """
+    Child 1: Complex, slow model.
+    """
+
+    def model_train(self, the_data):
+
+        # we're trying to override the parent's .model_train() method
+        # If we don't it'll run the parents logic
+
+        print(f'''
+[RandomForestModel --> {self.name}] ::: Building {np.random.randint(100, 234)} Decision Trees on data: {the_data}
+        ''')
+
+        time.sleep(2.54)
+
+
+class DeepNN(ClassBase):
+
+    """
+    Child 2: Heavy, deep model.
+    """
+
+    def model_train(self, the_data):
+        
+        print(f'''
+[DeepNN --> {self.name}] ::: Forward and Backward Propagation on data: {the_data}
+        ''')
+
+        time.sleep(2.66)
+
+
+
+# ===================================== Polymorphic Execution =====================================
+
+def ML_run_grid(list_of_models: list[object], input_data):
+
+    """
+    Runs a list of different models. 
+    It treats them all exactly the same because they are all 'BaseModels'.
+    """
+
+    print("\n===================================== Starting AutoML Grid Search =====================================\n")
+
+    global HP_model # HP_model = Highest Performance Model
+
+    highest_acc = -1.9
+
+    for the_model in list_of_models:
+
+        the_model.model_train(input_data)
+
+        m_acc = the_model.model_evaluation()
+
+        if m_acc >= highest_acc:
+
+            highest_acc = m_acc
+
+            
+            HP_model = the_model
+
+            print(f'''
+The Winner is: {the_model.name} with {highest_acc:.4f} accuracy
+        ''')
+
+
+
+
+# ===================================== EXECUTION =====================================
+
+
+if __name__ == '__main__':
+
+    cloud_data = AmazonS3Connect('my-bucket-v1')
+
+    local_data = DeviceLocalConnect('/home/jesfusion/Documents/ml/ML-Learning-Repository/Saved_Datasets_and_Models/Datasets/Bullshit_Dataset/raw_user_logs.csv')
+
+    data_V1 = ingestion_pipeline(cloud_data)
+    
+    data_V2 = ingestion_pipeline(local_data)
+
+    model_list = [
+        DeepNN('Gemini-Flash-v.2'),
+
+        RandomForestModel('Forest-v4.5'),
+        
+        # DeepNN('Gemini-Flash-v.2')
+    ]
+
+    # procesing them uniformly...
+
+    ML_run_grid(input_data = data_V1, list_of_models = model_list)
 
 
 
