@@ -2683,3 +2683,196 @@ if __name__ == '__main__':
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== The Base Layer (Inheritance) =====================================
+
+class BaseModel:
+    """Parent class establishing the basic blueprint for all models."""
+    def __init__(self, model_name, model_version):
+        self.name = model_name
+        self.version = model_version
+        print(f'\n{self.__class__} ::: Class initiated with name: {self.name} and version: {self.version}')
+    
+    def deploy(self):
+        print(f'\n{self.__class__} ::: Deploying {self.name} v{self.version}..')
+
+    def predict(self, input_data):
+        # Default logic for all child classes
+        print('\n[BaseModel] Generic prediction...')
+        model_prediction = np.random.rand(1, 1)[0][0].round(6)
+        return model_prediction
+
+# ===================================== The Specializations (Overriding & Extending) =====================================
+
+class LegacyModel(BaseModel):
+    """Inherits from BaseModel and adds specific attributes."""
+    def __init__(self, sk_ML_name, sk_ML_version, sk_ML_overhead_cost):
+        # Calls the Parent constructor to handle name and version
+        super().__init__(model_name = sk_ML_name, model_version = sk_ML_version)
+        self.overhead_cost = sk_ML_overhead_cost
+
+    def predict(self, sk_inp_data):
+        # Method Overriding: Replaces parent logic with a specific version
+        print('\n[LegacyModel] CPU chugging along...')
+        return 0.1
+
+class ModernModel(BaseModel): 
+    """Inherits from BaseModel and extends existing methods."""
+    def deploy(self):
+        # Extension: Adds new logic BEFORE calling the parent's original deploy logic
+        print('\n[ModernModel] GPU warm-up sequence initiated...')
+        super().deploy()
+
+# ===================================== The Capabilities (Multiple Inheritance & Mixins) =====================================
+
+class AWSMixin:
+    """Standalone functionality (Mixin) for AWS integration."""
+
+    def upload_to_s3(self, filename):
+        self.AWS_file = filename
+        print(f'\n[AWSMixin] Uploading {self.AWS_file} to S3...')
+
+class AzureMixin:
+    """Standalone functionality (Mixin) for Azure integration."""
+        
+    def push_to_blob(self, filename):
+        self.AZURE_file = filename
+        print(f'\n[AzureMixin] Pushing {self.AZURE_file} to Blob Storage...')
+
+class HybridModel(ModernModel, AWSMixin, AzureMixin):
+    """Multiple Inheritance: Combines logic from three different classes."""
+    def __init__(self, hyb_model_name, hyb_model_version):
+        super().__init__(model_name = hyb_model_name, model_version = hyb_model_version)
+
+# ===================================== The Chaos (Polymorphism & Duck Typing) =====================================
+
+class ChaosScript:
+    """A completely unrelated class that still has a 'deploy' method."""
+    def deploy(self):
+        print('\n[ChaosScript] I do what I want!')
+
+# ===================================== The Execution Engine =====================================
+
+def universal_deployer(object_list: list = []):
+    """
+    Polymorphism: Treats different objects the same way based on shared method names.
+    """
+    for model in object_list:
+        # 'Duck Typing': If it looks like a model (has deploy), treat it like a model
+        if hasattr(model, 'deploy') is True:
+            model.deploy()
+        else:
+            continue
+
+if __name__ == '__main__':
+    # Initialize instances
+    hyb_model = HybridModel(hyb_model_name ='hyb-gemini', hyb_model_version = '2.1.1')
+
+    model_list = [
+        hyb_model,
+
+        LegacyModel(sk_ML_name = 'KNN-oppo', sk_ML_overhead_cost = '$44335', sk_ML_version = '1.2.0'),
+
+        ChaosScript() # Unrelated object works because of the shared 'deploy' method
+    ]
+
+    # Run deployment logic
+    universal_deployer(object_list = model_list)
+
+    # Use Mixin capabilities
+    hyb_model.upload_to_s3(filename = 'file1.csv')
+    hyb_model.push_to_blob(filename = 'file2.csv')
+
+
+
+
