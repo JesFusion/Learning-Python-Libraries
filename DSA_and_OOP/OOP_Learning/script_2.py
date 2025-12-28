@@ -1,7 +1,11 @@
 # Procedural Programming (a simple list of instructions) gets messy and hard to maintain ("spaghetti code") because data is global and separate from the functions that use it.
+import time
 import random
 from abc import ABC, abstractmethod
 import numpy as np
+from jesse_custom_code.pandas_file import logs_path
+import logging
+logging.basicConfig(level = logging.INFO, format = '%(message)s')
 
 the_name, the_balance = "Jesse", 1000
 
@@ -1804,6 +1808,874 @@ except Exception as an_error:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class DBConnect: # DBConnect = DataBase Connect
+
+    """
+    Class that enables one to connect to a database efforlessly
+    """
+
+    def __init__(self, database_URL):
+        self.d_baseURL = database_URL
+        self.is_DB_connected = False
+
+        logging.info(f"\nParent Class Initialized generic connector for {self.d_baseURL}")
+
+
+    def dbase_connect(self): # method for connecting
+
+        self.is_DB_connected = True
+        
+        self.connect_status()
+
+    def dbase_disconnect(self):
+
+        self.is_DB_connected = False
+
+        self.connect_status()
+
+    
+    def connect_status(self):
+
+        if self.is_DB_connected is True:
+
+            logging.info(f"\nParent Class connected to {self.d_baseURL} successfully")
+        
+        elif self.is_DB_connected is False:
+            logging.info("\nParent Class disconnected!")
+
+
+class SQLite(DBConnect):
+
+    """
+    The Child class. It's a database connector, but specific to SQLite.
+    
+    It automatically inherits dbase_connect, dbase_disconnect and connect_status
+    """
+
+    def start_engine(self):
+
+        # the start_engine method is only available in the Subclass. The parent class doesn't inherit it, even though the subclass inherited some methods from the superclass
+
+        logging.info(f"\nInitiating database engine and connecting to SQLite database at {self.d_baseURL}") # subclasses can access the attributes of superclasses
+
+class PostgreSQLDataBase(DBConnect):
+    pass # 'pass' means "I add nothing new, just give me exactly what my parent has."
+
+
+
+# ===================================== Testing the classes =====================================
+
+con_link = "->dbaselink://user:pass@localhost:5432/mydb"
+
+
+# instantiating Postgres class (Subclass)...
+post_dbase = PostgreSQLDataBase(con_link)
+
+post_dbase.dbase_connect()
+
+post_dbase.dbase_disconnect()
+
+
+try:
+    post_dbase.start_engine() 
+    # if you tried to run the code above, an error will be thrown as PostgreSQLDataBase doesn't have the .start_engine() method. However, if we wanted PostgreSQLDataBase to inherit the method, we would make PostgreSQLDataBase a subclass of SQLite, as doing such would make it inherit SQLite's methods and also DBConnect methods (since SQLite is a subclass of DBConnect)
+
+except Exception:
+    pass
+
+finally: # finally is used after a try/except to place code that should run whether an error was thrown during the try/except or not
+
+    PostgreSQLDataBase.__bases__ = (SQLite,) # changing PostgreSQLDataBase superclass to SQLite
+    
+    post_dbase = PostgreSQLDataBase(con_link)
+
+    post_dbase.start_engine() # it should apply the start_engine() method to PostgreSQLDataBase
+
+
+
+# instantiating SQLite database connector (Subclass)...
+
+sqlite_dcon = SQLite(con_link)
+
+sqlite_dcon.start_engine()
+
+sqlite_dcon.dbase_connect()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# configuring our logging Process...
+
+"""
+We configure this ONCE at the start of the program:
+
+1. filename: Writes to a file instead of the terminal.
+2. level: We set it to DEBUG so we see EVERYTHING.
+3. format: We make it look like a timestamped record.
+4. filemode: 'w' overwrites the file each time. 'a' would append (add to bottom).
+"""
+logging.basicConfig(
+    filename = f"{logs_path}oop_status_report.log",
+    filemode = "w",
+    level = logging.DEBUG,
+    format = "%(asctime)s ::: %(name)s ::: %(levelname)s ::: %(message)s"
+)
+
+# Check 'oop_status_report.log' in the logs folder. The output is going there!
+
+
+class DataPipeLine:
+
+    """
+    The Parent Class. 
+    It knows how to load data, but its training is very basic.
+    """
+
+    def __init__(self, d_name): # d_name = dataset name
+        self.name_of_dataset = d_name
+
+        logging.warning(f"[Base Class] Initialized [DataPipeLine] with dataset: {self.name_of_dataset}")
+
+    def model_train(self):
+        # A generic method that the child might want to override...
+
+        logging.info("Instantiating model training!")
+
+    def model_save(self):
+
+        logging.info("[DataPipeLine] Instantiating model save to drive!")
+
+        if self.name_of_dataset == "csv":
+
+            logging.warning("[DataPipeLine] Model about to be saved as csv file!")
+
+            logging.debug("[DataPipeLine] Model saved as csv file.")
+
+            logging.critical("Not sure this is right")
+
+        else:
+
+            logging.critical("A serious error occured! Diverting to model_v2.pkl")
+
+
+
+
+class ClassicalMLPipeLine(DataPipeLine):
+    """
+    The Child Class.
+    It inherits from DataPipeLine.
+    """
+
+    def __init__(self, the_dataset_name, model_LR):
+
+        super().__init__(the_dataset_name) # super().__init__() activates the parents attributes sets, before activating the Child's. Here we passed the needed attribute to the Parent Class
+        # It is advised to always run super().__init__() before assigning attributes to the Child class
+
+        self.model_learning_rate = model_LR
+
+        logging.debug(f"[ClassicalMLPipeLine] Model Hyperparameter set: lr = {self.model_learning_rate}")
+
+        logging.error("A situation occured while fetching pre-config parameters!")
+
+    def model_train(self):
+
+        logging.info("[ClassicalMLPipeLine] Starting deep neural network training...")
+
+        logging.debug(f"[ClassicalMLPipeLine] Training with learning rate = {self.model_learning_rate}")
+
+        # we do not call super().model_train() here because we want to override it with our own custom function
+
+
+
+
+# ===================================== LOGIC EXECUTION =====================================
+
+logging.info("\n===================================== STARTING SCRIPT =====================================\n")
+
+# Instantiating the Subclass...
+
+the_model = ClassicalMLPipeLine("staff_logs_dataset.parquet", 0.0019) # because we called super().__init__() in ClassicalMLPipeLine, appropriate attributes will be passed to it's parent class 'DataPipeLine'
+
+
+the_model.name_of_dataset = "csv"
+
+# calling the overridden method...
+the_model.model_train()
+
+# calling the inherited method that wasn't overridden...
+
+the_model.model_save()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== OVERRIDING & EXTENDING =====================================
+
+
+class SomeRandomClass:
+
+    '''
+    The Parent Class. 
+    It defines the basic structure of any model.
+    '''
+
+    def __init__(self, particular_name):
+
+        # the parent class handles the name attribute
+        self.name = particular_name
+        self.is_trained = False
+
+        print(f'''
+[SomeRandomClass] ::: Initialized Random Model (Class): {self.name}
+        ''')
+
+    
+    
+    def model_train(self):
+        # a generic placeholder method
+        
+        print(f'''
+[SomeRandomClass --> model_train] ::: Generic Training Loop. Not much done
+              
+2 + 2 = {2 + 2}
+        ''')
+
+        self.is_trained = True
+
+
+
+
+    
+class DeepLearningClass(SomeRandomClass):
+    """
+    The Child Class.
+    It overrides 'train' and extends '__init__'.
+    """
+
+    def __init__(self, NN_name, NN_layers):
+        
+        # what super().__init__() does is that it inherits it's parent's attributes 
+
+        # we tell the class to replace particular_name with NN_name
+        super().__init__(particular_name = NN_name) # self.name = NN_name
+
+        self.model_layers = NN_layers
+
+        print(f'''
+[DeepLearningClass] ::: Added {self.model_layers} layers to the architecture
+        ''')
+
+    
+    def model_train(self):
+        # we overridde .model_train() method in the SomeRandomClass class, inserting our own new logic
+        print(f'''
+[DeepLearningClass --> model_train] ::: Spinning up GPU for {self.name}...
+
+[DeepLearningClass --> model_train] ::: Backpropagation in Progess...
+        ''')
+
+        self.is_trained = True
+
+
+
+
+
+# ===================================== MULTIPLE INHERITANCE & MRO =====================================
+
+class FastAIClass:
+
+    """
+    Docstring for StupidCLass1
+    """
+
+    def ran_func(self):
+
+        print('''
+[FastAIClass] ::: Saving Logs to text file
+        ''')
+
+
+class FavourIsCool:
+
+    """
+    Docstring for FavourIsCool
+    """
+
+    def ran_func(self):
+
+        print('''
+[FavourIsCool] ::: Saving Data to PostgreSQL DataBase...
+        ''')
+
+
+class DataPipeline(FastAIClass, FavourIsCool):
+
+    """
+    The Child Class. inherits from BOTH FastAIClass and FavourIsCool.
+    Notice the order: (FastAIClass, FavourIsCool)
+    """
+
+    pass # do nothing. just chill
+
+
+
+# ===================================== SCRIPT EXECUTION =====================================
+
+# instantiating the `DeepLearningClass` class
+ai_model = DeepLearningClass(NN_name = "YOLOv1", NN_layers = 12)
+
+print(ai_model.is_trained) # is_trained = False
+
+# calling the method that was overridden
+ai_model.model_train()
+
+print(ai_model.is_trained) # is_trained = True
+
+
+training_pipeline = DataPipeline()
+
+# since both parent classes [FastAIClass & FavourIsCool] have the .ran_func() method, python looks from Left-to-Right and runs the FastAIClass version of the .ran_func() method first
+training_pipeline.ran_func()
+
+# we debug MRO cases using the .mro() method
+
+print(DataPipeline.mro()) # [<class '__main__.DataPipeline'>, <class '__main__.FastAIClass'>, <class '__main__.FavourIsCool'>, <class 'object'>]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== DUCK TYPING (The Flexible Way) =====================================
+
+'''
+Two classes with no relationship with each other, only that they have a method with the same name. You can call this method from each class, even if they're not related
+'''
+
+class AmazonS3Connect:
+
+    """
+    Simulates connecting to Amazon S3.
+    """
+
+    def __init__(self, name_of_bucket):
+        
+        self.b_name = name_of_bucket
+
+    def data_retrieval(self):
+
+        print(f"[AmazonS3Connect] ::: Connecting to bucket '{self.b_name}'...")
+
+        time.sleep(2)
+
+        print("[AmazonS3Connect] ::: Download Complete")
+
+        return np.linspace(12, 34, 3).round(2).tolist()
+
+
+class DeviceLocalConnect:
+
+    """
+    Simulates reading a CSV from your Laptop.
+    """
+
+    def __init__(self, path):
+        
+        self.path_to_file = path
+
+    def data_retrieval(self):
+
+        print(f'''
+[DeviceLocalConnect] ::: Opening Local file '{self.path_to_file}'...
+        ''')
+
+        return np.random.randint(12, 34, size = (3)).round(2).tolist()
+
+
+def ingestion_pipeline(connection_interface: object):
+
+    """
+    This function represents your Data Pipeline.
+    
+    CRITICAL: It does NOT check 'if isinstance(connection_interface, AmazonS3Connect)'.
+    It simply assumes 'connection_interface' has a .data_retrieval() method.
+    This is Duck Typing.
+    """
+
+    print(f"\n===================================== Starting Ingestion with {connection_interface.__class__.__name__} =====================================\n")
+
+    input_data = connection_interface.data_retrieval()
+
+    print(f"Pipeline received Data: {input_data}\n")
+
+    return input_data
+
+
+
+# ===================================== POLYMORPHISM WITH INHERITANCE (The Strict Way) =====================================
+
+"""
+Two classes that inherits from a base class, with their different versions of overriden methods. Calling each class method makes each class run it's own method version
+"""
+
+class ClassBase:
+
+    """
+    The Parent. Defines the 'Interface' that all children must have.
+    """
+
+    def __init__(self, the_name):
+
+        self.name = the_name
+
+        self.model_accuracy = 0.0
+
+    
+    def model_train(self, the_data):
+
+        # children are expected to override this
+
+        print(f'''
+[ClassBase --> {self.name}] ::: Default training...
+        ''')
+        
+    
+    def model_evaluation(self):
+
+        # returns a random accuracy for simulation
+
+        self.model_accuracy = random.uniform(0.70, 0.99)
+
+        print(f'''
+[ClassBase --> {self.name}] ::: Accuracy: {self.model_accuracy:.4f}
+        ''')
+
+        return self.model_accuracy
+    
+
+class RandomForestModel(ClassBase):
+    """
+    Child 1: Complex, slow model.
+    """
+
+    def model_train(self, the_data):
+
+        # we're trying to override the parent's .model_train() method
+        # If we don't it'll run the parents logic
+
+        print(f'''
+[RandomForestModel --> {self.name}] ::: Building {np.random.randint(100, 234)} Decision Trees on data: {the_data}
+        ''')
+
+        time.sleep(2.54)
+
+
+class DeepNN(ClassBase):
+
+    """
+    Child 2: Heavy, deep model.
+    """
+
+    def model_train(self, the_data):
+        
+        print(f'''
+[DeepNN --> {self.name}] ::: Forward and Backward Propagation on data: {the_data}
+        ''')
+
+        time.sleep(2.66)
+
+
+
+# ===================================== Polymorphic Execution =====================================
+
+def ML_run_grid(list_of_models: list[object], input_data):
+
+    """
+    Runs a list of different models. 
+    It treats them all exactly the same because they are all 'BaseModels'.
+    """
+
+    print("\n===================================== Starting AutoML Grid Search =====================================\n")
+
+    global HP_model # HP_model = Highest Performance Model
+
+    highest_acc = -1.9
+
+    for the_model in list_of_models:
+
+        the_model.model_train(input_data)
+
+        m_acc = the_model.model_evaluation()
+
+        if m_acc >= highest_acc:
+
+            highest_acc = m_acc
+
+            
+            HP_model = the_model
+
+            print(f'''
+The Winner is: {the_model.name} with {highest_acc:.4f} accuracy
+        ''')
+
+
+
+
+# ===================================== EXECUTION =====================================
+
+
+if __name__ == '__main__':
+
+    cloud_data = AmazonS3Connect('my-bucket-v1')
+
+    local_data = DeviceLocalConnect('/home/jesfusion/Documents/ml/ML-Learning-Repository/Saved_Datasets_and_Models/Datasets/Bullshit_Dataset/raw_user_logs.csv')
+
+    data_V1 = ingestion_pipeline(cloud_data)
+    
+    data_V2 = ingestion_pipeline(local_data)
+
+    model_list = [
+        DeepNN('Gemini-Flash-v.2'),
+
+        RandomForestModel('Forest-v4.5'),
+        
+        # DeepNN('Gemini-Flash-v.2')
+    ]
+
+    # procesing them uniformly...
+
+    ML_run_grid(input_data = data_V1, list_of_models = model_list)
 
 
 

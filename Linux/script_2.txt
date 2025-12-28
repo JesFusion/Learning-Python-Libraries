@@ -1,0 +1,557 @@
+echo $SHELL - Tekls you what shell you're using
+
+
+whoami - prints out your username
+
+# i. WHAT: Prints the network name of the machine.
+# ii. WHY: Crucial when managing multiple servers so you don't accidentally reboot the wrong one.
+hostname
+
+# 3. EXPLORE THE HIERARCHY
+# i. WHAT: Change directory to the Root (The very bottom of the tree).
+# ii. WHY: To leave your home folder and see the system structure.
+cd /
+
+# i. WHAT: List files to confirm the FHS folders exist.
+# ii. WHY: You should see 'bin', 'etc', 'home', 'usr' here.
+ls
+
+# i. WHAT: Change directory into the configuration folder.
+# ii. WHY: To prove that 'etc' is where config files live.
+cd /etc
+
+# i. WHAT: Change directory BACK to your personal workspace (Home).
+# ii. WHY: ~ is the safest place to be. We always return here after exploring.
+cd ~
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. ESTABLISH BASELINE
+# i. WHAT: Print Working Directory.
+# ii. WHY: Confirming we start at Home (Expected: /home/jesse).
+pwd
+
+# 2. CREATE A DUMMY PROJECT STRUCTURE
+# i. WHAT: Create a nested folder structure 'projects/mlops_v1'.
+# ii. WHY: To give us a "deep" directory to practice jumping into.
+# iii. CHANGE IT?: Changing names changes the path, but logic remains.
+mkdir -p projects/mlops_v1
+
+# 3. THE DEEP DIVE
+# i. WHAT: Change directory into the newly created folder.
+# ii. WHY: Entering our workspace.
+cd projects/mlops_v1
+
+# i. WHAT: Verify location.
+# ii. WHY: Should output /home/jesse/projects/mlops_v1.
+pwd
+
+# 4. THE SYSTEM JUMP (Simulating checking logs)
+# i. WHAT: Teleport immediately to the system log directory.
+# ii. WHY: In production, you often need to check /var/log while working on code.
+cd /var/log
+
+# i. WHAT: List files in 'human-readable' format.
+# ii. WHY: To check if log files are huge (GBs) or empty (KBs) without doing math.
+ls -lh
+
+# 5. THE RETURN (The Efficiency Hack)
+# i. WHAT: Change Directory "Minus" (Previous).
+# ii. WHY: Instantly snaps you back to /home/jesse/projects/mlops_v1 without typing it again.
+# iii. IMPACT: Saves 10-20 seconds of typing. Crucial during emergencies.
+cd -
+
+# 6. VERIFY HIDDEN ASSETS
+# i. WHAT: Go to Home.
+# ii. WHY: Resetting position.
+cd ~
+
+# i. WHAT: List All files including hidden ones.
+# ii. WHY: To see .bashrc or .profile which are usually invisible.
+ls -a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. SETUP: CREATE A DEEP STRUCTURE
+# i. WHAT: Create nested directories 'simulation/production/logs' inside Home.
+# ii. WHY: To create a scenario where "Absolute" vs "Relative" navigation feels different.
+# iii. WHAT IF: We change it? We just change the folder names, logic stays the same.
+mkdir -p ~/simulation/production/logs
+
+# 2. THE ABSOLUTE PATH APPROACH
+# i. WHAT: Change directory starting from Root (/) all the way to logs.
+# ii. WHY: This is the "Safe" way. It works no matter where you currently are in the system.
+# iii. MLOps CONTEXT: This is how you would write the path in a Cron job script.
+cd /home/$(whoami)/simulation/production/logs
+
+# i. WHAT: Print where we are.
+# ii. WHY: Confirm we arrived.
+pwd
+
+# 3. THE RELATIVE PATH APPROACH
+# i. WHAT: Go up two levels (back to 'simulation').
+# ii. WHY: We are navigating relative to our current position in 'logs'.
+cd ../..
+
+# i. WHAT: Verify we are now in 'simulation'.
+# ii. WHY: '..' took us to 'production', the second '..' took us to 'simulation'.
+pwd
+
+# 4. TAB COMPLETION DRILL
+# i. WHAT: Go back into production/logs using Tab.
+# ii. WHY: Type 'cd p' -> [TAB] -> 'cd o' -> [TAB].
+# iii. BENEFIT: Prevents typos. If Tab doesn't work, you made a typo or the file doesn't exist.
+cd production/logs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. THE QUICK CHECK
+# i. WHAT: Ask what the 'cat' command is.
+# ii. WHY: I heard someone say "cat the file" and I don't know what that means.
+whatis cat
+
+# 2. THE CHEAT SHEET
+# i. WHAT: Ask 'ls' (list) for its help summary.
+# ii. WHY: I forgot the flag to show hidden files and I don't want to open the full manual.
+ls --help
+
+# 3. THE DEEP DIVE (Interactive)
+# i. WHAT: Open the full manual for the 'rm' (remove) command.
+# ii. WHY: I need to know if 'rm' deletes directories recursively.
+# iii. ACTION: Once inside, type '/recursive' to search for the flag. Press 'q' to exit.
+man rm
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. THE EFFICIENT CREATION
+# i. WHAT: Create a nested directory structure in one command.
+# ii. WHY: We need a place to store our "models" and "data". Without -p, this fails.
+mkdir -p mlops_lab/data/raw
+
+# 2. THE TOUCH TECHNIQUE
+# i. WHAT: Create two empty CSV files inside the raw data folder.
+# ii. WHY: Simulating a dataset ingestion. We need files to practice on.
+touch mlops_lab/data/raw/dataset_a.csv mlops_lab/data/raw/dataset_b.csv
+
+# 3. VERIFICATION
+# i. WHAT: List the files recursively to see the whole tree.
+# ii. WHY: Confirming our structure exists before we destroy it.
+ls -R mlops_lab
+
+# 4. THE FIRST DELETE (SAFE)
+# i. WHAT: Remove a specific file.
+# ii. WHY: We decided dataset_a was corrupt.
+rm mlops_lab/data/raw/dataset_a.csv
+
+# 5. THE FAILED DELETE (LEARNING MOMENT)
+# i. WHAT: Try to remove the 'data' folder without flags.
+# ii. WHY: This WILL FAIL. Linux will say "Is a directory".
+# iii. LESSON: You cannot delete a container just by pointing at it.
+rm mlops_lab/data
+
+# 6. THE NUCLEAR OPTION (CONTROLLED)
+# i. WHAT: Recursively Force remove the entire 'mlops_lab' folder.
+# ii. WHY: We are done with this experiment. Clean up the workspace.
+# iii. DANGER: Double check the path before hitting Enter. 'rm -rf' does not forgive.
+rm -rf mlops_lab
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. SETUP: CREATE THE MESS
+# i. WHAT: Create a folder and dump mixed file types into it.
+# ii. WHY: Simulating a download folder containing code, images, and data mixed together.
+mkdir -p downloads
+touch downloads/model.py downloads/script.sh downloads/image1.jpg downloads/data.csv
+
+# 2. CREATE DESTINATIONS
+# i. WHAT: Create specific folders for each file type.
+# ii. WHY: A clean workspace is a clean mind (and fewer bugs).
+mkdir -p project/src project/images project/data
+
+# 3. THE WILDCARD MOVE (IMAGES)
+# i. WHAT: Move all files ending in .jpg from downloads to project/images.
+# ii. WHY: Instead of moving one by one, we grab them all with *.jpg.
+mv downloads/*.jpg project/images/
+
+# 4. THE RENAME (USING MV)
+# i. WHAT: Move model.py to src AND rename it to main.py at the same time.
+# ii. WHY: Refactoring code often requires renaming the entry point.
+mv downloads/model.py project/src/main.py
+
+# 5. THE BACKUP (COPY)
+# i. WHAT: Create a backup of the data before we touch it.
+# ii. WHY: Always backup raw data. If your cleaning script is buggy, you can restart.
+cp downloads/data.csv project/data/data_backup.csv
+
+# 6. FINAL CLEANUP
+# i. WHAT: Force delete the downloads folder.
+# ii. WHY: We have extracted everything valuable. The shell is effectively the trash can.
+rm -rf downloads
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. SETUP: GENERATE DUMMY DATA
+# i. WHAT: Create a CSV file with a header and 100 rows of data.
+# ii. WHY: We need a file with enough content to practice 'head' vs 'tail'.
+echo "id,model_name,accuracy" > training_data.csv
+for i in {1..100}; do echo "$i,model_v$i,$RANDOM"; done >> training_data.csv
+
+# 2. THE HEAD INSPECTION
+# i. WHAT: View the first 5 lines of the CSV.
+# ii. WHY: To verify the column names (id, model_name) before we try to load it into Pandas.
+# iii. CHANGE IT?: Change -n to 20 to see more rows.
+head -n 5 training_data.csv
+
+# 3. THE TAIL INSPECTION
+# i. WHAT: View the last 3 lines.
+# ii. WHY: To see the most recent data points added (should be roughly id 98, 99, 100).
+tail -n 3 training_data.csv
+
+# 4. THE CAT DISASTER (SIMULATED)
+# i. WHAT: Dump the whole file.
+# ii. WHY: Since our file is only 100 lines, this is safe. 
+# iii. NOTE: Notice how it floods your terminal history. Imagine if this was 1 million lines.
+cat training_data.csv
+
+# 5. THE LESS EXPERIENCE
+# i. WHAT: Open the file in the pager.
+# ii. WHY: Practice navigating without cluttering the terminal history.
+# iii. ACTION: Press 'q' to exit after running this.
+less training_data.csv
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. CREATE A BUGGY SCRIPT
+# i. WHAT: Create a python file with a deliberate syntax error (missing parenthesis).
+# ii. WHY: To simulate a broken production script.
+echo "print('Starting Model Training..." > broken_model.py
+
+# 2. VERIFY THE BUG
+# i. WHAT: Run the script to see it fail.
+# ii. WHY: Confirming the error message exists.
+python3 broken_model.py
+# Expected Output: SyntaxError: EOL while scanning string literal
+
+# 3. THE FIX (Interactive Step)
+# i. WHAT: Open the file in the nano editor.
+# ii. WHY: We need to close the quote and parenthesis.
+nano broken_model.py
+
+# --- INSTRUCTIONS INSIDE NANO ---
+# A. Use arrow keys to go to the end of the line.
+# B. Add: ')'   (So it looks like: print('Starting Model Training...'))
+# C. Press Ctrl+O (Save).
+# D. Press Enter (Confirm filename).
+# E. Press Ctrl+X (Exit).
+# -------------------------------
+
+# 4. VERIFY THE FIX
+# i. WHAT: Run the script again.
+# ii. WHY: To confirm our manual edit worked.
+python3 broken_model.py
+# Expected Output: Starting Model Training...
+
+
+
+

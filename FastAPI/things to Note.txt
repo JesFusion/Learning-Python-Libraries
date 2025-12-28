@@ -1,0 +1,27 @@
+{
+    The "Health Check" Endpoint is used by cloud platforms (AWS/K8s) to check if your app is alive.
+    e.g:
+    @app.get("/health")
+    async def health_check():
+        return "System Fully Operational!"
+},
+
+{
+    To run your FastAPI script, navigate its directory and run:
+
+    "uvicorn main:app --reload"
+
+    - "--reload" means "Development Mode". 
+    - If you change the code file, the server restarts automatically. 
+    - NEVER use --reload in production[cite: 292].
+},
+
+{
+    Use Ctrl + C to turn off FastAPI server
+},
+
+{
+    Serialization is converting an object (usually a Dictionary, in Python) to a JSON-Formatted String
+
+    Deserialization is converting a JSON back to an object that a programming language can interact with
+}

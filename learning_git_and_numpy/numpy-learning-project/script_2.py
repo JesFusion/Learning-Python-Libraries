@@ -1,8 +1,17 @@
+import os
+from dotenv import load_dotenv
+import os
+from dotenv import load_dotenv
 import numpy as np
 import time
+import logging
 import pandas as pd
-from jesse_custom_code.pandas_file import database_path as d_path
+from jesse_custom_code.pandas_file import database_path as d_path, logs_path
 from sqlalchemy import create_engine
+
+load_dotenv()
+
+postgre_connect = os.getenv("POSTGRE_CONNECT")
 
 a_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
@@ -3324,6 +3333,827 @@ Therefore:
 - Flatten = COPY
 - Masking/Fancy Indexing = COPY
 '''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Slogs_dset = pd.read_sql(
+    "SELECT * FROM subscription_logs LIMIT 9500",
+
+    create_engine(postgre_connect)
+)
+
+
+m_usg_hrs_array = Slogs_dset["monthly_usage_hrs"].to_numpy()
+
+hrs_std = np.std(m_usg_hrs_array, axis = 0)
+
+print(f'''
+Standard Deviation of Monthly Usage Hours: {hrs_std:.2f}
+''')
+
+# The assignent wants to test my knowledge copy and views in Numpy, but it wants me to perform on a DataFrame instead of a numpy array.
+# I chose to use an array instead of a DataFrame
+
+marketing_sample = Slogs_dset.head(10)
+
+original_array = m_usg_hrs_array[:20].round() # let's use the "monthly_usage_hrs" array
+
+sliced_array = original_array[:10].copy()
+
+print(f'''
+Original Array Before Mock Modification: {original_array}
+
+Sliced Array Before Mock Modification: {sliced_array}''')
+
+sliced_array[0] = 1125
+
+print(f'''
+Original Array After Mock Modification: {original_array}
+
+Sliced Array After Mock Modification: {sliced_array}
+''') # original array remained the same
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+logging.basicConfig(
+    filename = f"{logs_path}numpy_status_report.log",
+    filemode = "w",
+    level = logging.DEBUG,
+    format = "%(asctime)s ::: %(levelname)s ::: %(message)s"
+)
+
+
+logging.info("\n===================================== Instantiating learning for numpy 8.3 =====================================\n")
+
+
+d_engine = create_engine(postgre_connect)
+
+
+num_rows = 15500
+
+cGPU_log = pd.DataFrame({
+    "server_id": np.random.randint(1000, 1095, num_rows), # 95 servers
+
+    "temperature_c": np.random.normal(65, 10, num_rows),
+
+    "fan_speed_rpm": np.random.randint(2000, 6000, num_rows), # rotations per minute between 2000-6000
+
+    "incident_flag": np.zeros(num_rows, dtype = int)
+})
+
+
+# Downcasting data types to save memory...
+
+logging.warning("data-types of DataFrame at int64/float64. Downcasting...")
+
+cGPU_log['server_id'] = cGPU_log['server_id'].astype('int16')
+
+cGPU_log['temperature_c'] = cGPU_log['temperature_c'].astype('float16')
+
+cGPU_log['fan_speed_rpm'] = cGPU_log['fan_speed_rpm'].astype('int16')
+
+logging.info(f'''
+{num_rows} of GPU logs generated!
+''')
+
+# ===================================== INGESTING Dataset to PostgreSQL =====================================
+
+
+
+try:
+    logging.warning("Pushing dataset to PostgreSQL server...")
+
+    cGPU_log.to_sql(
+        name = "cluster_gpu_logs",
+        con = d_engine,
+        if_exists = 'replace'
+    )
+
+    logging.info("Data successfully pushed to PostgreSQL server")
+
+except Exception as error:
+
+    logging.error(f"Couldn't push to server. \nCheck out error: {error}")
+
+
+
+
+
+# ===================================== EXTRACTING DATA BACK FOR ANALYSIS =====================================
+
+logging.info("Extracting dataset from server for analysis...")
+
+cpu_logs_dset = pd.read_sql(
+    "SELECT * FROM cluster_gpu_logs LIMIT 11375",
+
+    d_engine
+)
+
+
+logging.info(f'''
+======================================== Sample of Pulled Dataset ========================================
+             
+{cpu_logs_dset.sample(6).to_markdown()}
+''')
+
+
+# Converting columns in dataframe to numpy arrays...
+temp_of_gpu = cpu_logs_dset['temperature_c'].values
+
+speed_of_fan = cpu_logs_dset['fan_speed_rpm'].values
+
+
+logging.debug(f"Data loaded into NumPy arrays.Shape: {temp_of_gpu.shape}")
+
+
+logging.debug(f"Original GPU Temps (First 5): {temp_of_gpu[:5]}")
+
+# let's create a view, just for testing
+array_view = temp_of_gpu[:5]
+
+
+# boolean indexing is used in creating copies
+overheating_GPUs = temp_of_gpu[temp_of_gpu > 80]
+
+num_overheating = len(overheating_GPUs)
+
+
+
+if num_overheating > 4:
+
+    logging.warning(f"Created a copy of overheating servers. Count of {num_overheating} is disturbing")
+
+    logging.info(f"Before hack: {overheating_GPUs[0]}")
+
+    overheating_GPUs[0] = -0.2332
+
+    logging.info(f"After hack: {overheating_GPUs[0]}")
+
+    logging.info(f"------- Analysis of original array (Max: {np.max(temp_of_gpu)}) -------")
+
+    if float(overheating_GPUs[0]) in temp_of_gpu:
+
+        logging.critical("Original Array was modified!")
+
+    else:
+
+        logging.info("Original is untouched. The copy alone was modified")
+
+
+else:
+
+    logging.info(f"Created a copy of overheating servers. Count: ({num_overheating} at bare minimum)")
+
+
+# Arithmetic operations are also used to create copies of an array
+temp_of_gpu_copy = (temp_of_gpu * 0.9517) - 7.226
+
+# we also use the .copy() method to create copies of an array
+arr_copy = temp_of_gpu_copy.copy()
+
+logging.info(f'''Original GPU temp Array ID: {id(temp_of_gpu)}
+Copy GPU temp Array ID: {id(temp_of_gpu_copy)}
+Copy GPU temp Array ID (2): {id(arr_copy)}
+''')
+
+
+
+# ===================================== WHY IS THE KNOWLEDGE OF COPY AND VIEWS CRITICAL? =====================================
+
+# let's say the fan_speed_rpm array takes 7GB of space on the RAM (this is possible, because in real companies we'll be handling massive amounts of data). creating a copy of this array will claim another 7GB of space
+
+fans_overheat = speed_of_fan[temp_of_gpu > 80]
+
+f_heat_count = len(fans_overheat)
+
+
+if f_heat_count > 300:
+
+    logging.critical(f"Overheating fans above maximum treshold! Count: {f_heat_count}")
+
+else:
+
+    logging.warning(f"Overheating fans at {f_heat_count} (below maximum treshold)")
+
+
+# we can't modify the original array when we create a copy, because it'll be the copy that we're modifying
+
+fans_overheat[:] = 6000 # we just modified the copy, not the main array, which was not our intent
+
+num_mod = np.sum(speed_of_fan[temp_of_gpu > 80] == 6000)
+
+if 6000 not in speed_of_fan:
+
+    logging.error(f"Could not change all values in speed_of_fan array to 6000. Detached copy was modified instead. Count of values at 6000: {num_mod}")
+
+else:
+
+    logging.info("Values in speed_of_fan array successfully changed to 6000")
+
+
+# the best way to modify the original array is to cerate a view
+
+# instead of creating a slice/mask and assigning it to a variable, we modify the slice/mask directly
+
+logging.warning("Attempting direct slice assignment...")
+
+speed_of_fan[:] = 999
+
+logging.info(f'''Result: SUCCESS
+First 12 values: {speed_of_fan[:12]}
+''')
+
+
+
+# ===================================== MEMORY MANAGEMENT (IN-PLACE OPERATIONS) =====================================
+
+large_array = np.ones(10_000_000, dtype = 'float64')
+
+logging.info(f'''
+======================================== Memory Management ========================================
+             
+Large Array Size: {(large_array.nbytes) / 1024**2:.2f} MB
+''')
+
+"""
+In-Place Operations:
+
+i. arr = arr + 5
+This creates a temporary copy of the array with the new values, then reassigns the variable name. Peak memory usage is double (2N).
+
+ii. arr += 5
+This is an In-Place operation. It modifies the bits directly in their existing memory address. Peak memory usage is just N.
+"""
+
+# novice method: reassigning a variable name back to an operation performed on it, leads to unwanted assigning of new memory
+start_memory = id(large_array)
+large_array = large_array * 4 # this cerates a new array for the result, meaning a new memory allocation
+
+if id(large_array) != start_memory:
+
+    logging.warning(f"Naive Op: Created a new array in memory (Address changed). Array Size: {(large_array.nbytes) / 1024**2:.2f} MB")
+
+
+# in-place operations enable us to modify an array without having new memory allocated to the result
+start_memory = id(large_array)
+large_array *= 4 # this modifies the array directly
+
+if id(large_array) == start_memory:
+
+    logging.info(f"Optimal Op: Modified data in-place (Address kept). Saved RAM. Array Size: {(large_array.nbytes) / 1024**2:.2f} MB")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+logging.basicConfig(
+    filename = f"{logs_path}numpy_status_report.log",
+    filemode = "a",
+    level = logging.INFO,
+    format = "%(asctime)s ::: %(levelname)s ::: %(message)s"
+)
+
+logging.info("===================================== Instantiating learning for numpy 9.1 =====================================")
+
+table = "cluster_gpu_logs"
+num_entries = 10000
+
+
+try:
+
+    gpu_logs_dset = pd.read_sql(
+        f"SELECT temperature_c, fan_speed_rpm FROM {table} LIMIT {num_entries}",
+
+        create_engine(postgre_connect)
+
+    )
+
+    logging.info(f"{num_entries} entries successfully extracted from the '{table}' table in the PostgreSQL server!")
+
+except Exception as error:
+
+    logging.error(f"An error occured while trying to extract dataset from server: {error}")
+
+
+features_matrix = gpu_logs_dset.to_numpy().round(2)
+
+
+
+# ===================================== DOT PRODUCT =====================================
+
+
+# there're three ways of perfroming dot products. Let's extract two arrays from features_matrix...
+
+first_server = features_matrix[0]
+second_server = features_matrix[1]
+
+
+
+# i. THE MANUAL WAY
+dp_1 = ((first_server[0] * second_server)[0] + (first_server[1] * second_server[1]))
+
+# ii. THE NUMPY WAY
+dp_2 = np.dot(first_server, second_server)
+
+# iii. THE MODERN WAY
+dp_3 = first_server @ second_server
+
+
+if (dp_1 + dp_2) == (dp_3 * 2):
+
+    logging.info("Verification: All three NumPy methods yield the same result.")
+
+
+
+# ===================================== MATRIX MULTIPLICATION (BATCH PROCESSING) =====================================
+
+# navive approach: looping thorugh each row and performing a dot product (Imagine doing this for a billion rows)
+
+s_time = time.time()
+slow_scores = []
+
+for a_row in features_matrix:
+
+    score_of_row = 0
+
+    for x in range(len(a_row)):
+
+        score_of_row += a_row[x] * second_server[x]
+
+    slow_scores.append(int(score_of_row))
+
+e_time = time.time()
+
+
+# the ENTERPRISE approach: performing the operation on the whole Matrix at once
+
+v_s_time = time.time()
+fast_scores_vect = features_matrix @ second_server
+v_e_time= time.time()
+
+
+"""
+Even with just 5 rows, the syntax is cleaner
+
+With 1 million rows, the '@' operator uses optimized C/Fortran backends.
+
+The naive loop fights against the Python Global Interpreter Lock (GIL) every iteration.
+"""
+
+slow_time = e_time - s_time
+fast_time = v_e_time - v_s_time
+report = f'''Slow Method Time: {slow_time}
+Fast Method Time: {fast_time}
+'''
+
+if fast_time > slow_time:
+
+    logging.error(f"{report}Vectorization took more time than manual looping!")
+
+elif slow_time > fast_time:
+
+    logging.info(f"{report}Vectorization is much faster than manual python looping!")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+logging.basicConfig(level = logging.DEBUG,format = "<-- %(levelname)s -->\n %(message)s")
+load_dotenv()
+
+array_save_path = os.getenv("NUMPY_SAVE_PATH")
+
+array_a = np.array([
+    [2, 1],
+    [4, 5]
+])
+
+array_b = np.array([100, 260])
+
+
+logging.info(f'''Coefficient Matrix A: 
+{array_a}
+
+Dependent Vector B: {array_b}
+''')
+
+matrix_det = np.linalg.det(array_a)
+
+logging.info(f'''Matrix Determinant: {matrix_det:.2f}
+''')
+
+if abs(matrix_det) <= 1e-9:
+
+    logging.error("Matrix is singular. Cannot solve!")
+
+else:
+
+    eq_sol = np.linalg.solve(array_a, array_b)
+
+    logging.info(f'''
+Optimal Allocation Found:
+
+Cluster A Jobs: {int(eq_sol[0])}
+
+Cluster B Jobs: {int(eq_sol[1])}
+    ''')
+
+    eigenvalues, eigenvectors = np.linalg.eig(array_a)
+
+    logging.info(f"Eigenvalues: {eigenvalues}\nEigenvectors: {eigenvectors}\n")
+
+    u, s, vh = np.linalg.svd(array_a)
+
+    logging.info(f'''
+U: {u}
+
+S: {s}
+
+VH: {vh}
+    ''')
+
+
+# ===================================== ARRAY SAVING =====================================
+
+# let's assume that eq_sol is the weights our model just arrived at after learning from the dataset, and array_a is our configuration
+
+# saving weights and configs...
+
+numpy_file = f"{array_save_path}model_checkpoint.npz"
+
+np.savez(numpy_file, weights = eq_sol, config = array_a)
+
+
+# Simulating a Server Restart
+
+# clearing memory from server...
+del eq_sol # del is the "delete" command in Python. It is a way to "forget" a variable or remove an item from a collection
+del array_a
+
+
+# loading the numpy file back...
+
+loaded_array = np.load(numpy_file)
+
+weights = loaded_array["weights"]
+configs = loaded_array["config"]
+
+logging.info(f'''
+Restored Weights:
+{weights}
+
+Restored Config Shape:
+{configs}
+''')
+
+
 
 
 
