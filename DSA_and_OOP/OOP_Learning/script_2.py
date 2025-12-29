@@ -2683,3 +2683,211 @@ if __name__ == '__main__':
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== CALLABLES & FACTORIES =====================================
+
+
+class TheDenseLayer:
+
+    """
+    A simulation of a PyTorch Linear Layer.
+    Demonstrates __call__, @classmethod, and @staticmethod.
+    """
+
+    def __init__(self, model_name, model_weights, model_bias):
+
+        """
+        The Standard Constructor.
+        It assumes you ALREADY have the specific weights ready.
+        """
+
+        self.m_name = model_name
+
+        self.m_weights = model_weights
+
+        self.m_bias = model_bias
+
+        print(f"[{self.m_name}] ::: Initialized with fixed weights")
+
+    def __call__(self, inp_value):
+
+        """
+        WHAT: Makes the object behave like a function.
+        WHY: Allows us to write 'layer(5)' instead of 'layer.forward(5)'.
+        WHAT IF: We used a normal method? We couldn't chain layers easily (layer2(layer1(x))).
+        """
+
+        print(f"[{self.m_name}] ::: __call__ triggered with input: {inp_value}")
+
+        lin_result = (inp_value * self.m_weights) + self.m_bias
+
+        model_result = self.RELU(lin_result)
+
+        return model_result
+
+    @staticmethod	
+    def RELU(value):
+
+        """
+        WHAT: A Utility function (Rectified Linear Unit).
+        WHY: It turns negative numbers to 0. It's pure math.
+        
+        KEY SYNTAX: No 'self'. This function doesn't care about 'self.weights'.
+        It only cares about the input 'x'.
+        """
+
+        return max(0, value)
+    
+    # ===================================== THE CLASS METHOD (@classmethod) =====================================
+
+    @classmethod
+    def rand_gen(cls, prefix):
+
+        """
+        WHAT: An 'Alternative Constructor' (Factory Pattern).
+        WHY: Sometimes we don't know the weights yet. We want the class to generate them for us.
+        
+        KEY SYNTAX: 'cls' refers to the 'DenseLayer' class itself, not an object.
+        Calling cls(...) is exactly the same as calling DenseLayer(...).
+        """
+
+        print(f"\n[TheDenseLayer] ::: Manufacturing a random layer for '{prefix}'...")
+
+        rand_weight = round(random.uniform(0.1, 1.0), 2)
+
+        rand_bias = round(random.uniform(-1.0, 1.0), 2)
+
+        an_instance = cls(
+        model_name = prefix,
+
+        model_weights = rand_weight,
+
+        model_bias = rand_bias
+        )
+
+        return an_instance
+
+
+
+# ===================================== EXECUTION =====================================
+
+if __name__ == '__main__':
+
+    # Initializing the class:
+    # This is a primitive way because data input can be of incosistent format Sometimes
+    fixed_layer = TheDenseLayer(
+    model_name = "Gemini-1.0.1",
+    model_bias = 1.4,
+
+    model_weights = 2.53
+    )
+
+
+    mr1 = fixed_layer(inp_value = 12.3) # __call__ makes us able to call the class like a function and pass parameters
+
+    print(f"Result 1: {mr1}")
+
+    # Pro way of Initializing class:
+    # we use the class method to process data with different format and then Initialize the class
+    random_layer = TheDenseLayer.rand_gen(prefix = "Oppo-3.4")
+
+    mr2 = random_layer(inp_value = -2) # using __call__ on the random_layer
+
+    print(f"Result 2: {mr2}")
+
+    # you can use a static method without creating an instance/object at all
+    print(f"\nDirect Static Utility usage: ReLU(-100) -> {TheDenseLayer.RELU(-100)}")
+
+
+
+
+
+
+
