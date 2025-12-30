@@ -7,6 +7,9 @@ from jesse_custom_code.pandas_file import logs_path
 import logging
 logging.basicConfig(level = logging.INFO, format = '%(message)s')
 
+
+
+
 the_name, the_balance = "Jesse", 1000
 
 def balance_update(the_amount):
@@ -2889,5 +2892,705 @@ if __name__ == '__main__':
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== COMPOSITION OVER INHERITANCE =====================================
+
+
+class Processor:
+
+    """
+    A component class representing the Processor.
+    """
+
+    def __init__(self, cpu_cores, cpu_speed):
+
+        self.Ccores = cpu_cores
+
+        self.Cspeed = cpu_speed
+
+    
+    def CPU_process(self):
+
+        return f"Thinking with {self.Ccores} cores at {self.Cspeed} GHz..."
+    
+
+
+class GraphicsProcessingUnit:
+
+    """
+    A component class representing the Graphics Card.
+    """
+
+    def __init__(self, gpu_vram):
+
+        self.G_VRAM = gpu_vram
+
+    def GPU_render(self):
+
+        return f"Rendering pixels with {self.G_VRAM}GB VRAM..."
+
+
+
+class Computer:
+
+    """
+    The 'Composite' object. 
+    It doesn't inherit power; it OWNS components that provide power.
+    """
+
+    def __init__(self, computer_name, CPU_size, GPU_size):
+
+        self.c_name = computer_name
+        
+        self.c_size = CPU_size
+
+        self.g_size = GPU_size
+
+    def boot_computer(self):
+
+        print(f"--> Booting {self.c_name}...")
+
+        output = f"""
+{self.c_size.CPU_process()}
+
+{self.g_size.GPU_render()}
+"""
+        
+        print(output)
+    
+
+
+# ===================================== EXECUTION =====================================
+
+if __name__ == '__main__':
+
+    lame_cpu = Processor(cpu_cores = 2, cpu_speed = 2.4)
+
+    cutting_edge_cpu = Processor(cpu_cores = 16, cpu_speed = 5.0)
+
+    lame_gpu = GraphicsProcessingUnit(gpu_vram = 2)
+
+    cutting_edge_gpu = GraphicsProcessingUnit(gpu_vram = 24)
+
+
+    # Now let's build computers...
+
+    # we'll build a simple office computer, with simple CPU and GPU
+
+    office_computer = Computer(computer_name = 'HP Probook Business', CPU_size = lame_cpu, GPU_size = lame_gpu)
+
+    # gaming computer with powerful cpu and gpu
+    gaming_computer = Computer("Razer Blade 16", cutting_edge_cpu, cutting_edge_gpu)
+
+    # we can also create a custom computer with cheap cpu but powerful gpu
+    # NOTE: This would be impossible if we used inheritance to create the Computer class.
+
+    custom_computer = Computer(computer_name = "Kallo4v1", CPU_size = lame_cpu, GPU_size = cutting_edge_gpu)
+
+    office_computer.boot_computer()
+    
+    custom_computer.boot_computer()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== S.O.L.I.D. PRINCIPLES =====================================
+
+
+# ===================================== I - Interface Segregation Principle (ISP) =====================================
+
+'''
+Don't force a client to implement methods they don't use.
+'''
+
+class EPaymentProcessor(ABC):
+
+    @abstractmethod
+    def pay_money(self, amount):
+
+        pass
+
+
+class EAuthProcessor(ABC):
+
+    @abstractmethod
+    def twoFA(self):
+
+        pass
+
+
+
+
+# ===================================== O - Open/Closed Principle (OCP) && D - Dependency Inversion Principle =====================================
+
+'''
+Open for extension, Closed for modification
+
+Depend on abstractions, not concrete implementations
+'''
+
+class StripePayment(EPaymentProcessor, EAuthProcessor):
+
+    def pay_money(self, amount):
+        
+        print(f"Stripe: Sending ${amount}...")
+
+    def twoFA(self):
+        
+        print("Stripe: Verifying user via SMS...")
+
+
+class CCPayment(EPaymentProcessor):
+
+    def pay_money(self, amount):
+        
+        print(f"Credit Card: Charging ${amount}...")
+
+    """
+    CreditCardPayment did NOT implement IAuthProcessor. 
+    
+    Because of Interface Segregation, it wasn't forced to implement an empty 2FA method.
+    """
+
+
+
+# ===================================== L - Liskov Substitution Principle (LSP) =====================================
+
+"""
+A subclass (DebitCard) must behave exactly like its parent (CreditCard) so the system doesn't crash if we swap them.
+"""
+
+class DCPayment(CCPayment):
+
+    def pay_money(self, amount):
+
+        # takes the same inputs and gives the same outputs. Safe to swap.
+
+        print(f"Debit Card: Deducting ${amount} directly from bank...")
+
+
+
+# ===================================== S - Single Responsibility Principle (SRP) =====================================
+
+
+class LogTransactions:
+
+    """
+    Responsible ONLY for logging. Not for paying.
+    """
+
+    def log_transaction(self, message):
+
+        print(f"[LOG]: {message}")
+
+class PaymentRoute:
+
+    """
+    The High-Level Manager.
+    """
+
+    def __init__(
+    self,
+    the_method: EPaymentProcessor|StripePayment,
+    the_logger: LogTransactions
+    ):
+        
+        self.method = the_method
+
+        self.logger = the_logger
+
+    
+    def order_processing(self, the_amount):
+
+        self.logger.log_transaction(message = f'Initiating payment of ${the_amount}')
+
+        self.method.pay_money(amount = the_amount)
+
+        self.logger.log_transaction(message = 'Payment Successful')
+
+
+
+# ===================================== EXECUTION =====================================
+
+
+
+if __name__ == '__main__':
+
+    # instantiating the log and payment process class 
+    t_logger = LogTransactions()
+
+    stripe = StripePayment()
+
+    p_service = PaymentRoute(the_logger = t_logger, the_method = stripe)
+
+    p_service.order_processing(the_amount = 45000)
+
+    print()
+
+    debit_card = DCPayment()
+
+    second_service = PaymentRoute(the_method = debit_card, the_logger = t_logger)
+
+    second_service.order_processing(the_amount = 92300)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== COMMON DESIGN PATTERNS =====================================
+
+# ===================================== SINGLETON PATTERN (The "One and Only") =====================================
+
+
+class DBConnect:
+
+    __instance = None
+
+    def __new__(cls):
+
+        if cls.__instance is None:
+
+            print("Creating new Database Connection...")
+
+            cls.__instance = super(DBConnect, cls).__new__(cls)
+
+            cls.__instance.status = "Connected"
+
+        else:
+
+            print("Returning existing Database Connection...")
+
+        return cls.__instance
+
+
+    def SQL_query(self, query):
+
+        return f"Running '{query}' on DataBase instance {id(self)}"
+
+
+
+
+# ===================================== FACTORY PATTERN (The "Manager") =====================================
+
+
+class DecisionTreeModel:
+
+    def model_train(self) -> str:
+
+        return "Training Decision Tree..."
+
+
+class DeepNeuralNetwork:
+
+    def model_train(self):
+
+        return "Training Neural Network (Slow)..."
+
+
+
+class ModelSelection: # this class returns a model class depending on your input string
+
+    @staticmethod
+    def select_model(model: str) -> object:
+
+        if model == 'tree':
+
+            return DecisionTreeModel()
+        
+        elif model == 'nn':
+
+            return DeepNeuralNetwork()
+        
+        else:
+
+            raise ValueError("Unknown Model Type")
+
+
+
+
+# ===================================== OBSERVER PATTERN (The "Subscriber") =====================================
+
+class TrainTheModel:
+
+    """
+    The 'Subject' being observed.
+    """
+    
+    def __init__(self):
+        
+        self._the_subscribers = set() # we use a set because it's faster in data retrieval than a list
+
+
+    def sub_attach(self, a_observer):
+
+        self._the_subscribers.add(a_observer)
+
+    
+    def sub_detach(self, d_observer):
+
+        self._the_subscribers.discard(d_observer)
+
+    
+    def complete_training(self, model_accuracy: int|float):
+
+        print("\nTraining Complete! Notifying Subscribers...")
+
+        for subscriber in self._the_subscribers:
+
+            subscriber.update(model_accuracy)
+
+
+
+class EmailReminder:
+
+    """The Observer"""
+
+    def update(self, the_accuracy):
+
+        print(f"EMAIL: Model finished Training with accuracy = {the_accuracy}.\nSending to boss...")
+
+
+class TheSlackAlert:
+    """The Observer"""
+
+    def update(self, alert_accuracy):
+
+        print(f"SLACK: Ping! New Model accuracy: {alert_accuracy}")
+
+
+
+# ===================================== SCRIPT EXECUTION =====================================
+
+if __name__ == '__main__':
+
+    database_1 = DBConnect()
+    
+    database_2 = DBConnect()
+
+    a_model = ModelSelection.select_model('nn')
+
+    model_trainer = TrainTheModel()
+
+    email_system = EmailReminder()
+
+    slack_system = TheSlackAlert()
+
+
+    print(f'''
+======================================== Singleton Pattern ========================================
+          
+Are database_1 and database_2 the same object? {database_1 is database_2}
+
+
+===================================== Factory Pattern =====================================
+
+{a_model.model_train()}
+    ''')
+
+    # subscribing
+    model_trainer.sub_attach(email_system)
+
+    model_trainer.sub_detach(slack_system)
+    
+    model_trainer.sub_attach(slack_system)
+
+    # Triggering an Event
+    model_trainer.complete_training(0.91)
 
 
