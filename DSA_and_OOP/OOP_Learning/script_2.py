@@ -2774,6 +2774,482 @@ if __name__ == '__main__':
 
 
 
+
+
+
+# ===================================== The Base Layer (Inheritance) =====================================
+
+class BaseModel:
+    """Parent class establishing the basic blueprint for all models."""
+    def __init__(self, model_name, model_version):
+        self.name = model_name
+        self.version = model_version
+        print(f'\n{self.__class__} ::: Class initiated with name: {self.name} and version: {self.version}')
+    
+    def deploy(self):
+        print(f'\n{self.__class__} ::: Deploying {self.name} v{self.version}..')
+
+    def predict(self, input_data):
+        # Default logic for all child classes
+        print('\n[BaseModel] Generic prediction...')
+        model_prediction = np.random.rand(1, 1)[0][0].round(6)
+        return model_prediction
+
+# ===================================== The Specializations (Overriding & Extending) =====================================
+
+class LegacyModel(BaseModel):
+    """Inherits from BaseModel and adds specific attributes."""
+    def __init__(self, sk_ML_name, sk_ML_version, sk_ML_overhead_cost):
+        # Calls the Parent constructor to handle name and version
+        super().__init__(model_name = sk_ML_name, model_version = sk_ML_version)
+        self.overhead_cost = sk_ML_overhead_cost
+
+    def predict(self, sk_inp_data):
+        # Method Overriding: Replaces parent logic with a specific version
+        print('\n[LegacyModel] CPU chugging along...')
+        return 0.1
+
+class ModernModel(BaseModel): 
+    """Inherits from BaseModel and extends existing methods."""
+    def deploy(self):
+        # Extension: Adds new logic BEFORE calling the parent's original deploy logic
+        print('\n[ModernModel] GPU warm-up sequence initiated...')
+        super().deploy()
+
+# ===================================== The Capabilities (Multiple Inheritance & Mixins) =====================================
+
+class AWSMixin:
+    """Standalone functionality (Mixin) for AWS integration."""
+
+    def upload_to_s3(self, filename):
+        self.AWS_file = filename
+        print(f'\n[AWSMixin] Uploading {self.AWS_file} to S3...')
+
+class AzureMixin:
+    """Standalone functionality (Mixin) for Azure integration."""
+        
+    def push_to_blob(self, filename):
+        self.AZURE_file = filename
+        print(f'\n[AzureMixin] Pushing {self.AZURE_file} to Blob Storage...')
+
+class HybridModel(ModernModel, AWSMixin, AzureMixin):
+    """Multiple Inheritance: Combines logic from three different classes."""
+    def __init__(self, hyb_model_name, hyb_model_version):
+        super().__init__(model_name = hyb_model_name, model_version = hyb_model_version)
+
+# ===================================== The Chaos (Polymorphism & Duck Typing) =====================================
+
+class ChaosScript:
+    """A completely unrelated class that still has a 'deploy' method."""
+    def deploy(self):
+        print('\n[ChaosScript] I do what I want!')
+
+# ===================================== The Execution Engine =====================================
+
+def universal_deployer(object_list: list = []):
+    """
+    Polymorphism: Treats different objects the same way based on shared method names.
+    """
+    for model in object_list:
+        # 'Duck Typing': If it looks like a model (has deploy), treat it like a model
+        if hasattr(model, 'deploy') is True:
+            model.deploy()
+        else:
+            continue
+
+if __name__ == '__main__':
+    # Initialize instances
+    hyb_model = HybridModel(hyb_model_name ='hyb-gemini', hyb_model_version = '2.1.1')
+
+    model_list = [
+        hyb_model,
+
+        LegacyModel(sk_ML_name = 'KNN-oppo', sk_ML_overhead_cost = '$44335', sk_ML_version = '1.2.0'),
+
+        ChaosScript() # Unrelated object works because of the shared 'deploy' method
+    ]
+
+    # Run deployment logic
+    universal_deployer(object_list = model_list)
+
+    # Use Mixin capabilities
+    hyb_model.upload_to_s3(filename = 'file1.csv')
+    hyb_model.push_to_blob(filename = 'file2.csv')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== OPERATOR OVERLOADING (Polymorphism in Disguise) =====================================
+
+
+class D2Vector:
+
+    """
+    A class representing a 2D mathematical vector (x, y).
+    Demonstrates how to overload +, *, and ==.
+    """
+        
+    def __init__(self, x_value, y_value):
+        
+        self.x_axis = x_value
+        
+        self.y_axis = y_value
+
+    @classmethod
+    def type_verification(self, item, type, error: str):
+
+        if not isinstance(item, type):
+
+            raise TypeError(error)
+
+    def __add__(self, value):
+
+        """
+        WHAT: Defines behavior for 'vector_a + vector_b'.
+        WHY: Python translates 'a + b' to 'a.__add__(b)'.
+        """
+        
+        self.type_verification(item = value, type = D2Vector, error = 'Can only add Vector2D to Vector2D')
+        
+        return D2Vector(self.x_axis + value.x_axis, self.y_axis + value.y_axis)
+    
+    def __mul__(self, scalar_value):
+
+        """
+        WHAT: Defines behavior for 'vector * number'.
+        WHY: Allows scaling the vector (e.g., v * 3).
+        """
+
+        self.type_verification(item = scalar_value, type = (int, float), error = "Can only multiply Vector2D by a number")
+
+        return D2Vector(
+            self.x_axis * scalar_value, self.y_axis * scalar_value
+        )
+    
+    
+    def __eq__(self, value):
+        """
+        WHAT: Defines behavior for 'vector_a == vector_b'.
+        WHY: Default Python equality checks if they are the SAME object in memory.
+             We want to check if they have the SAME values.
+        """
+
+        if not isinstance(value, D2Vector):
+
+            return False
+        
+        return self.x_axis == value.x_axis and self.y_axis == value.y_axis
+    
+
+    # string representation
+    def __str__(self):
+        # this is the Human-readable output for print()
+        return f"Vector({self.x_axis}, {self.y_axis})"
+    
+    def __repr__(self):
+
+        # WHAT: Unambiguous dev output. 
+        # Ideally, this string IS valid Python code to recreate the object.
+        
+        return f'D2Vector(x_axis = {self.x_axis}, y_axis = {self.y_axis})'
+
+
+
+
+# ===================================== CONTAINER EMULATION (Making Lists Smarter) =====================================
+
+
+class ModelLogs:
+
+    """
+    A wrapper around a list of log messages.
+    Demonstrates __len__, __getitem__, and __setitem__.
+    """
+
+    def __init__(self, ep_name):
+        self.name_of_experiment = ep_name
+
+        self._logs = [] # private list in the class
+
+
+    def addAlog(self, log_message):
+
+        self._logs.append(log_message)
+
+    
+    # ===================================== MAGIC METHODS =====================================
+
+    def __len__(self):
+
+        # This allows len(my_logs).
+        # Standard Python behavior.
+
+        return len(self._logs)
+        
+    
+
+    def __getitem__(self, index_number):
+        """
+        WHAT: Allows my_logs[0] or my_logs[-1].
+        WHY: Makes the object iterable and indexable.
+        
+        DSA NOTE:
+        Accessing a list by index is O(1) Constant Time.
+        """
+
+        return f'[{self.name_of_experiment}] ::: {self._logs[index_number]}'
+    
+    def __setitem__(self, the_index, the_value):
+
+        """
+        WHAT: Allows my_logs[0] = "New Value".
+        WHY: Mutable access.
+        """
+
+        print(f"Overwriting log at index {the_index}...")
+
+        self._logs[the_index] = the_value
+
+
+
+# ===================================== EXECUTION =====================================
+
+
+if __name__ == '__main__':
+
+    vector_a = D2Vector(2, 4)
+
+    vector_b = D2Vector(-1, 3)
+
+    vector_c = vector_a + vector_b # this calls the __add__ method
+    # vector_a.__add__(vector_b)
+
+    vector_d = vector_c * 4.2 # calls the __mul__ method
+    # vector_c.__mul__(4.2)
+
+    vector_r = D2Vector(2, 4)
+
+    print(f'''
+======================================== OPERATOR OVERLOADING ========================================
+          
+Addition: {vector_a} + {vector_b} = {vector_c}
+
+Multiplication: {vector_a} * 3 = {vector_d}
+
+Equality check (vector_a = vector_r): {vector_a == vector_r}
+
+STR Output: {str(vector_a)}
+
+REPR Output: {repr(vector_a)}
+    ''')
+
+
+    logs_of_exp = ModelLogs(ep_name = 'Experiment-v.1.0.3')
+
+    log_no = [0.9, 0.5, 0.2]
+
+    for num in log_no:
+
+        logs_of_exp.addAlog(log_message = f'Epoch {log_no.index(num) + 1}: Loss {num}')
+
+    
+    print('''
+======================================== CONTAINER EMULATION ========================================
+    ''') 
+    
+    print(f"Total Logs: {len(logs_of_exp)}") # we can call len() on our object because we defined the __len__ method
+    
+    
+    print(f'First Log: {logs_of_exp[0]}\n')# indexing is possible because of the __getitem__ method
+
+    logs_of_exp[2] = 'Epoch 3: Loss 0.923' # (CORRECTED)
+
+    print(f"Modified Log: {logs_of_exp[2]}\n") # __setitem__
+
+    print("Iterating through loops:\n")
+
+    for a_log in logs_of_exp:
+
+        print(a_log)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ===================================== CALLABLES & FACTORIES =====================================
 
 
