@@ -1,0 +1,101 @@
+Module 1: The Metal - Lab 01
+
+Student: Nwachukwu Jesse
+Objective: Validate the Docker Installation and Dissect the Execution Flow.
+
+Step 1: The "Hello World"
+
+In your terminal, run the following command. This is the "smoke test" for your infrastructure.
+
+docker run hello-world
+
+
+Step 2: Forensic Analysis of Output
+
+You should see text output in your terminal. Let's break down exactly what happened, line by line.
+
+Line A: "Unable to find image 'hello-world:latest' locally"
+
+Concept: Image Caching.
+
+What happened: The Daemon (dockerd) checked your local hard drive (specifically /var/lib/docker) for an image named hello-world.
+
+Result: It wasn't there.
+
+Why: This is a fresh install.
+
+Line B: "latest: Pulling from library/hello-world"
+
+Concept: The Tag.
+
+Explanation: You didn't specify a version (e.g., hello-world:v1), so Docker assumed you meant latest. This is the default tag.
+
+Line C: "c1ec31eb5944: Pull complete"
+
+Concept: Layers.
+
+Explanation: Docker images are not single files; they are stacks of layers (like a cake). This image is tiny, so it only has one layer with the ID ending in 5944.
+
+Why this matters: If you download a huge image (like PyTorch) and later download a slightly different version, Docker will only download the new layers, saving you massive bandwidth.
+
+Line D: "Digest: sha256:..."
+
+Concept: Content Addressable Storage.
+
+Explanation: This is the cryptographic signature of the image. It guarantees that the code you downloaded is exactly bit-for-bit what the developer published. No man-in-the-middle attacks.
+
+Line E: "Hello from Docker!"
+
+Concept: Standard Output (stdout).
+
+Explanation: The container successfully started!
+
+The Daemon created a new set of Namespaces (isolation).
+
+It set up Cgroups (limits).
+
+It executed the binary file inside the image.
+
+That binary printed this text to stdout.
+
+The Daemon streamed that text back to your Client.
+
+The process finished, and the container Exited (stopped).
+
+Step 3: Verify the Aftermath
+
+Now that the container has run and stopped, where did it go?
+
+Run this command to see running containers:
+
+- docker ps
+
+Result: It should be empty. Why? Because hello-world finished its job and shut down.
+
+Now, run this command to see all containers (including dead ones):
+
+- docker ps -a
+
+
+Result: You should see one entry.
+
+CONTAINER ID: A random hash (e.g., a1b2c3d4).
+
+IMAGE: hello-world.
+
+STATUS: Exited (0).
+
+Step 4: The Cleanup (Garbage Collection)
+
+We don't want dead containers cluttering your billionaire workstation.
+
+Run this to clean up the specific container (replace [CONTAINER_ID] with the ID you saw above):
+
+- docker rm [CONTAINER_ID]
+
+
+Or, run the nuclear option to delete all stopped containers (Use with caution in production!):
+
+- docker container prune
+
+

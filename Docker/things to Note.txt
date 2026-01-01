@@ -1,0 +1,13 @@
+{
+    A container is a "slice" of your operating system that has been isolated from everything else.
+    
+    It is an active process running in your computer's memory (RAM).
+},
+
+{
+    When you start a container from an image, Docker adds a thin writable layer on top of the read-only image layers.
+    
+    Any changes you make inside the container—like creating a new text file—are saved in this temporary layer.
+    
+    If you delete the container, that writable layer (and any files you created) disappears, but the original image remains untouched. 
+}
