@@ -701,10 +701,107 @@ plt.show()
 
 
 
-import numpy as np
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 array_1 = np.array([2, 1, 3, 0, 233])
 
@@ -890,6 +987,523 @@ axes2.grid(True, alpha = 0.4)
 plt.tight_layout()
 
 print("Plot generated successfully using OO approach.")
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# we create a function for Extracting data. This is pure software Engineering because it makes data Extraction flexible
+# ie, we can rewrite the entire data_extraction_and_loading() function to Extract data a diffrent way without affecting the main codebase
+def data_extraction_and_loading():
+
+    data = sns.load_dataset("diamonds")
+
+    return data
+
+
+# Initializing the data
+diamonds_dataset = data_extraction_and_loading()
+
+# we set up our figure and axes
+figure, canvas_axes = plt.subplots(ncols = 3, nrows = 1, figsize = (19, 7), constrained_layout = True) # constrained_layout = True automatically adjusts the spacing between subplots, labels, titles, and tick labels to prevent overlaps.
+
+
+
+# ===================================== PLOT A: HIGH BIAS (UNDERFITTING) =====================================
+
+canvas_axes[0].set_title("High Bias: Too few bins (10)\nHides Details")
+
+sns.histplot(
+    data = diamonds_dataset, x = 'price',
+    bins = 10, # we're setting bins to 10, too few for a 53940 entry dataset
+    ax = canvas_axes[0], color = 'skyblue',
+    edgecolor = 'black'
+)
+
+
+
+# ===================================== PLOT B: HIGH VARIANCE (OVERFITTING) =====================================
+
+canvas_axes[1].set_title("High Variance: Too Many Bins (2000)\n(Visualizes Noise)")
+
+sns.histplot(
+    data = diamonds_dataset, x = 'price',
+    bins = 2000, # too many bins for a 54k dataset
+    ax = canvas_axes[1], color = 'salmon',
+    edgecolor = None # remove edges, otherwise it's just a black blob
+)
+
+
+
+# ===================================== PLOT C: THE 'BEST' ZONE + NORMALIZATION =====================================
+
+# Here, Seaborn uses algorithms like "Sturges" or "Freedman-Diaconis" which calculate the optimal bin width based on the data's Interquartile Range (IQR) and sample size (N).
+
+
+canvas_axes[2].set_title("Optimal: Auto Bins + Density Norm\n(True Distribution)")
+
+sns.histplot(
+    bins = 'auto', # Optimal approach: Algorithms calculate best width based on IQR.
+    data = diamonds_dataset, x = 'price',
+    stat = 'density', # NORMALIZATION: Y-axis is now Probability Density, not Count.
+    # This allows us to compare this dataset with another of diff size.
+    ax = canvas_axes[2], color = 'green',
+    alpha = 0.6 # Transparency makes the grid lines to show through
+)
+
+
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== BIMODAL DISTRIBUTION =====================================
+
+np.random.seed(20)
+
+the_students = np.random.normal(loc = 20, scale = 2, size = 1000)
+
+professionals = np.random.normal(loc = 35, scale = 5, size = 1000)
+
+career_age_dataset = pd.DataFrame(
+    data = np.trunc(
+        np.concatenate([
+            the_students,
+            professionals
+            ])
+        ), # here we combine the 'the_students' and 'professionals' array (using np.concatenate()), strip the decimal part (using np.trunc()) and feed it to our pandas DataFrame
+
+    columns = ['age'] # set the column name
+)
+
+
+# ===================================== BANDWIDTH AND SMOOTHING =====================================
+
+figure, axes = plt.subplots(
+    nrows = 2, ncols = 2,
+    figsize = (17, 7), 
+    constrained_layout = True
+)
+
+axes = axes.flatten()
+
+# ===================================== LAYER 1: THE RAW DATA =====================================
+
+sns.histplot(
+    data = career_age_dataset, x = 'age',
+    stat = 'density', bins = 30,
+    alpha = 0.3, # this puts the histogram in the background for ground truth
+    ax = axes[0],
+    color = 'orange', label = "Raw Histogram"
+)
+
+
+
+# ===================================== HIGH BANDWIDTH (OVERSMOOTHED) =====================================
+
+# kdeplot is used to visualize the distribution of data through Kernel Density Estimation (KDE).
+sns.kdeplot(
+    data = career_age_dataset, x = 'age',
+    bw_adjust = 2, # 2 = very Smooth
+    color = 'blue', linestyle = '--',
+    linewidth = 2, label = "High Bandwidth (Oversmoothed)",
+    ax = axes[1]
+)
+
+
+
+# ===================================== LOW BANDWIDTH: (UNDERSMOOTHED) =====================================
+
+sns.kdeplot(
+    data = career_age_dataset, x = 'age',
+    bw_adjust = 0.2, # 0.2 = very Spiky
+    color = 'green', linestyle = ':',
+    linewidth = 2, ax = axes[2],
+    label = "Low Bandwidth (Undersmoothed)"
+)
+
+
+
+# ===================================== OPTIMAL KDE =====================================
+
+
+sns.kdeplot(
+    data = career_age_dataset, x = 'age',
+    bw_adjust = 1, # we set bw_adjust to 1
+    color = 'red', ax = axes[3],
+    fill = True, # This fills area under curve for visual weight
+    alpha = 0.1, label = "Optimal KDE (Bimodal Discovery)"
+)
+
+figure.suptitle(
+    "KDE Bandwidth Analysis: Detecting Multimodal Distributions",
+    fontsize=16
+)
+
+
+for axes_num in range(4):
+
+    axes[axes_num].set_xlabel("User Age")
+    
+    axes[axes_num].set_ylabel("Probability Density")
+
+    axes[axes_num].legend()
+
+    axes[axes_num].grid(True, alpha = 0.3)
+
+figure.savefig("Bandwidth_Analysis.svg", format = 'svg', bbox_inches = 'tight')
+
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+iris_flower_dataset = sns.load_dataset('iris') # small dataset perfect for rugplots
+
+
+# ===================================== RUG PLOT (THE TRUTH LAYER) =====================================
+
+figure, axes = plt.subplots(figsize = (11, 7))
+
+sns.kdeplot(
+    data = iris_flower_dataset, x = 'sepal_length',
+    color = 'green', fill = True,
+    alpha = 0.2, ax = axes,
+    bw_adjust = 1, label = "Smooth KDE Approximation"
+)
+
+
+# the rugplot draws a tick for every single observation. ticks can take up 10% of the y-axis height
+
+sns.rugplot(
+    data = iris_flower_dataset, x = 'sepal_length', ax = axes,
+    height = 0.1, # Controls length of ticks
+    color = 'black', # for contrast
+    alpha = 0.5 # transparency helps visualize stacking overlap.
+)
+
+figure.suptitle("Rug Plot: Auditing the KDE for Hidden Gaps", fontsize = 14)
+
+axes.set_xlabel("Sepal Length (cm)")
+axes.set_ylabel("Density")
+
+
+plt.close()
+
+# ===================================== ADVANCED: MARGINAL PLOTS =====================================
+
+
+# Initialize the JointGrid object with the dataset and specify axes
+joint_grid = sns.JointGrid(
+    data = iris_flower_dataset, 
+    x = 'sepal_length', 
+    y = 'sepal_width', 
+    height = 7 # Sets the figure size to 7x7 inches
+)
+
+# Add a scatterplot to the central joint axis to show individual data points
+joint_grid.plot_joint(
+    sns.scatterplot, 
+    s = 51,          # Set marker size
+    alpha = 0.6,     # Set transparency to handle overlapping points
+    color = 'gray'   # Use a neutral color for the main distribution
+)
+
+# Add rug plots to the marginal axes (top and right) to show data density along edges
+joint_grid.plot_marginals(
+    sns.rugplot, 
+    color = 'black', 
+    height = 0.1,    # Set the length of the rug lines
+    alpha = 0.2      # Set transparency for the rug lines
+)
+
+# Layer Kernel Density Estimate (KDE) plots on the marginal axes for a smooth distribution view
+joint_grid.plot_marginals(
+    sns.kdeplot, 
+    color = 'blue', 
+    fill = True,     # Fill the area under the KDE curve
+    alpha = 0.1      # Set a light transparency for the fill
+)
+
+# Adjust the top margin to prevent the title from overlapping with the marginal plots
+plt.subplots_adjust(top = 0.9)
+
+# Set the main title for the entire figure
+joint_grid.fig.suptitle("JointGrid with Marginal Rugs: 2D Distribution Audit")
+
+
 plt.show()
 
 
