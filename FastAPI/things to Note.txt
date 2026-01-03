@@ -24,4 +24,27 @@
     Serialization is converting an object (usually a Dictionary, in Python) to a JSON-Formatted String
 
     Deserialization is converting a JSON back to an object that a programming language can interact with
+},
+
+{
+    HTTP response status codes are categorized into five distinct classes based on their first digit: 
+
+    - 1xx (Informational Responses):
+    These codes, like 100 Continue and 101 Switching Protocols, indicate the server has received the request and is continuing the process.
+
+
+    - 2xx (Success Responses):
+    These indicate the request was successfully handled. Examples include 200 OK, 201 Created, and 204 No Content.
+
+
+    - 3xx (Redirection Messages):
+    These codes, such as 301 Moved Permanently and 302 Found, require further action from the client to fulfill the request.
+
+
+    - 4xx (Client Error Responses):
+    These signify errors originating from the client, such as 400 Bad Request, 401 Unauthorized, 403 Forbidden, and 404 Not Found.
+
+
+    - 5xx (Server Error Responses):
+    These codes, including 500 Internal Server Error and 503 Service Unavailable, point to issues on the server side preventing the fulfillment of a valid request. 
 }
