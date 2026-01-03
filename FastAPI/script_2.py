@@ -1,13 +1,15 @@
 import os
-import requests
+import time
+import random
 import json
 import joblib
 import logging
+import requests
 import numpy as np
 from enum import Enum
 from pydantic import BaseModel, Field, model_validator
-from fastapi import FastAPI, Body
-from typing import List, Optional
+from fastapi import FastAPI, Depends, HTTPException, Header, Body
+from typing import List, Optional, Annotated
 from dotenv import load_dotenv
 
 
@@ -944,3 +946,275 @@ print(f"API Response: {d_pred_api_response}")
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+np.random.seed(20)
+
+
+
+fastapp = FastAPI() # Initialize the app
+
+
+async def check_if_premium(
+    x_token: Annotated[str, Header()],
+    age: int
+):
+    
+    """
+    Acts as a gatekeeper.
+    1. Checks the header 'x-token'.
+    2. If it's not 'dev_jesse', it raises an error.
+    3. If valid, it returns a dictionary with user info.
+    """
+
+    # Simulating a database lookup of valid tokens
+    # In production, this would be: user = await db.get_user(token)
+
+    fake_database = ['dev_jesse', 'admin_2006_20']
+
+    account_balance = np.random.randint(45000, 315000, size = (1, 6)).tolist()[0]
+
+    # logic to verify if the user is premium
+    if x_token not in fake_database:
+
+        raise HTTPException( # raise HTTPException error if user is not a premium User
+            status_code = 400,
+            detail = "Access Denied! Premium Membership required."
+        )
+    
+    # if user is valid, we return his details
+
+    check_if_p_output = {
+        "user_ID": x_token,
+        "status": "ACTIVE",
+        'tier': "platinum",
+        "age": age,
+        "Acc. Balance": random.choice(account_balance)
+    }
+
+    return check_if_p_output
+
+
+# let's write an endpoint
+
+@fastapp.get('/model_prediction/exclusive_model')
+
+# We use 'Depends(check_if_premium)' to inject the return value of the function above.
+async def run_premium_model(
+    user_information: dict = Depends(check_if_premium)
+):
+    """
+    This endpoint logic ONLY runs if .check_if_premium() succeeds.
+    We don't need to write 'if user is valid' here. It's guaranteed.
+    """
+    
+    # We can access the data returned by the function
+
+    user_identity = user_information['user_ID']
+    
+    user_tier = user_information['tier']
+
+    user_balance = user_information['Acc. Balance']
+
+    user_age = user_information['age']
+
+    run_p_model_output = f"Welcome, {user_identity} (Age: {user_age}). You are a {user_tier} user. Your account balance is ${user_balance}"
+
+    return run_p_model_output
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Instantiating the fastapi class
+fastapp = FastAPI()
+
+# we crate an endpoint named "/health" using the get method
+@fastapp.get("/health")
+async def check_server_health():
+    """
+    A simple health check endpoint.
+    Used by load balancers (AWS/K8s) to know if the server is alive.
+    """
+
+    CH_output = {
+        "status": "active",
+        "version": "1.0.0"
+    }
+
+    return CH_output
+
+
+# testing a post method with my own logic
+@fastapp.post('/jesse')
+async def jesse_page():
+
+    JP_output = {
+        "Name": "Jesse",
+        "Status": "Cool"
+    }
+
+    return JP_output
+
+
+
+
+
+
+# uvicorn main:fastapp --reload --port 2006
+# http://127.0.0.1:2006
