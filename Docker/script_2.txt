@@ -99,3 +99,141 @@ Or, run the nuclear option to delete all stopped containers (Use with caution in
 - docker container prune
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#!/bin/bash
+
+# ==============================================================================
+# SEGMENT 2: CONTAINER ANATOMY & LIFECYCLE LAB
+# AUTHOR: Senior MLOps Engineer (Your Future Self)
+# OS: Ubuntu 24.04
+# GOAL: Master the state machine of Docker containers (Run -> Stop -> Kill -> Rm)
+# ==============================================================================
+
+# 1. CLEANUP (Pre-computation check)
+# What: We forcibly remove any existing container named 'billionaire-model' to avoid name conflicts.
+# Why: Docker container names must be unique. If we run this script twice, it would fail without this.
+# What if: We omit this? The script crashes on line 20 saying "Conflict. The container name is in use."
+docker rm -f billionaire-model 2>/dev/null || true
+
+echo "--- 1. THE CREATION (docker run) ---"
+
+# 2. RUNNING A DETACHED CONTAINER
+# What: We start a container using the lightweight 'alpine' image and make it sleep for 1000 seconds.
+# Parameters:
+#   -d          : Detached Mode. Runs in background. Returns the Container ID immediately.
+#                 (Why: In MLOps, training jobs take hours. We don't want our shell blocked.)
+#   --name      : Assigns the human-readable name 'billionaire-model'.
+#                 (Why: Referring to 'billionaire-model' is easier than 'a1b2c3d4e5'.)
+#   alpine      : The image name. A 5MB Linux distro.
+#                 (Why: We don't need a heavy Ubuntu image just to test lifecycle commands.)
+#   sleep 1000  : The command the container runs (PID 1).
+#                 (Why: If we don't give it a long-running process, the container exits immediately.)
+docker run -d --name billionaire-model alpine sleep 1000
+
+# 3. INSPECTION (docker ps)
+echo -e "\n--- 2. VERIFICATION (docker ps) ---"
+# What: List only the currently running containers.
+# Why: To confirm our 'billionaire-model' is actually alive and didn't crash on startup.
+docker ps
+
+# 4. DEEP DIVE (docker inspect)
+echo -e "\n--- 3. METADATA (docker inspect) ---"
+# What: Extract the IP Address from the massive JSON metadata.
+# Parameters:
+#   -f '...' : Format flag using Go templates to parse the JSON.
+# Why: 'docker inspect' dumps 500 lines of JSON. We usually only care about specific fields like IP or Volumes.
+# What if: We run just 'docker inspect'? We get flooded with text.
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' billionaire-model
+
+# 5. LOGGING (docker logs)
+echo -e "\n--- 4. OBSERVABILITY (docker logs) ---"
+# First, let's generate some logs inside the container artificially
+# What: We use 'exec' to print to stdout inside the running container.
+docker exec billionaire-model echo "Epoch 1: Loss 0.99"
+docker exec billionaire-model echo "Epoch 2: Loss 0.45"
+
+# Now we read them
+# What: Fetch the STDOUT/STDERR history of the container.
+# Why: This is how you debug model crashes. You don't SSH in; you read logs.
+docker logs billionaire-model
+
+# 6. STOPPING (Graceful Shutdown)
+echo -e "\n--- 5. GRACEFUL SHUTDOWN (docker stop) ---"
+# What: Sends SIGTERM to the process.
+# Why: Allows the process to finish current tasks (e.g., saving a checkpoint) before closing.
+# What if: We skip this? The process might corrupt data if killed instantly.
+docker stop billionaire-model
+# Verify it's gone from 'docker ps' (running) but present in 'docker ps -a' (all)
+docker ps -a | grep billionaire-model
+
+# 7. RESTARTING
+echo -e "\n--- 6. RESURRECTION (docker start) ---"
+# What: Restarts a stopped container.
+# Why: It reuses the existing filesystem layer (data is preserved).
+docker start billionaire-model
+
+# 8. KILLING (The Nuclear Option)
+echo -e "\n--- 7. ASSASSINATION (docker kill) ---"
+# What: Sends SIGKILL.
+# Why: The process is stuck/frozen and won't listen to SIGTERM.
+# What if: You use this on a database? You might corrupt the database file.
+docker kill billionaire-model
+
+# 9. HOUSEKEEPING (docker system prune)
+echo -e "\n--- 8. GARBAGE COLLECTION (docker rm & prune) ---"
+# What: Remove the specific container metadata.
+# Why: A stopped/killed container still occupies disk space (logs, writable layer).
+docker rm billionaire-model
+
+# What: The command below is commented out because it is DESTRUCTIVE.
+# Command: docker system prune -f
+# Why: It deletes ALL stopped containers, unused networks, and dangling images.
+# What if: You run this on a production server? You might accidentally delete a stopped container you intended to debug later.
+echo "Run 'docker system prune' manually if you want to clean up unused space."
+
+echo -e "\nSegment 2 Lab Complete."
+
+
+
+
+
+
