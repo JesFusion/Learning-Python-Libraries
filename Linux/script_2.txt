@@ -555,3 +555,205 @@ python3 broken_model.py
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. SETUP: CREATE A TEST FILE
+# i. WHAT: Create a simple empty file named 'secret_model.pkl'.
+# ii. WHY: We need a file owned by the current user to examine default permissions.
+# iii. WHAT IF: If we don't create it, ls will fail.
+touch secret_model.pkl
+
+# 2. INSPECT PERMISSIONS (THE DECODE)
+# i. WHAT: List details for the file we just created.
+# ii. WHY: To see the 'rwx' string. Look for output like '-rw-r--r--'.
+# iii. WHAT IF: If you ignore this, you won't know if your colleague can overwrite your model.
+ls -l secret_model.pkl
+
+# 3. IDENTITY CHECK
+# i. WHAT: Run the 'id' command.
+# ii. WHY: To see your 'uid' (User ID) and 'gid' (Group ID).
+# iii. WHAT IF: If you are in the 'docker' group, you can control containers. If not, you can't.
+id
+
+# 4. THE FORBIDDEN DOOR (FAIL TEST)
+# i. WHAT: Try to list the contents of the /root directory (The admin's home).
+# ii. WHY: /root is usually owned by root with permissions 'drwx------' (User only).
+# iii. EXPECTED RESULT: "Permission denied". This confirms the OS is enforcing the rules.
+ls /root
+
+# 5. CHECKING BINARY PERMISSIONS
+# i. WHAT: Check permissions of the 'ls' program itself.
+# ii. WHY: To see why everyone is allowed to run this command.
+# iii. LOOK FOR: You will likely see '-rwxr-xr-x'. The final 'x' means "Others can Execute".
+ls -l /bin/ls
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. SETUP: Create dummy assets for the simulation
+# We create a directory to ensure we don't mess up your actual home folder.
+mkdir -p mlops_permission_lab
+cd mlops_permission_lab
+
+# Create a "script" and a "dataset"
+touch training_pipeline.py
+touch model_weights.h5
+
+echo "--- Initial State ---"
+# ls -l: List in long format to see permission bits (e.g., -rw-r--r--)
+ls -l
+
+# ==========================================
+# PART 1: NUMERIC MODE (The Precise Way)
+# ==========================================
+
+echo -e "\n--- Locking down Model Weights (Numeric 600) ---"
+# WHAT: Set permissions to 600 (User: Read/Write, Group: None, Others: None).
+# WHY: Model weights or API keys are sensitive. We do not want 'Group' or 'Others' to even read them.
+# WHAT IF WE CHANGE IT? If we used 644, anyone on the server could steal your IP.
+chmod 600 model_weights.h5
+
+# Verify the change
+ls -l model_weights.h5
+
+echo -e "\n--- Making Script Publicly Executable (Numeric 755) ---"
+# WHAT: Set permissions to 755 (User: R/W/X, Group: R/X, Others: R/X).
+# WHY: Standard permission for scripts/binaries. The owner can edit, but everyone else can only run it.
+# WHAT IF WE CHANGE IT? If we used 777, anyone could edit the script and inject malicious code. Never use 777.
+chmod 755 training_pipeline.py
+
+# Verify the change
+ls -l training_pipeline.py
+
+# ==========================================
+# PART 2: SYMBOLIC MODE (The Quick Way)
+# ==========================================
+
+echo -e "\n--- Making Script Executable via Symbol (Symbolic +x) ---"
+# Create a new script for this test
+touch deploy.sh
+
+# WHAT: Add execute (+x) permission to ALL users (User, Group, Others).
+# WHY: This is the most common command you will run ("chmod +x script.sh") to make a text file runnable.
+chmod +x deploy.sh
+
+ls -l deploy.sh
+
+echo -e "\n--- Revoking Write Access for Group (Symbolic g-w) ---"
+# Create a shared config file
+touch shared_config.yaml
+chmod 664 shared_config.yaml # Initially verify rw-rw-r--
+
+# WHAT: Remove write (-w) permission specifically for the Group (g).
+# WHY: You realized your teammates (Group) shouldn't be editing this config file, only reading it.
+chmod g-w shared_config.yaml
+
+ls -l shared_config.yaml
+
+# ==========================================
+# PART 3: OWNERSHIP (chown)
+# ==========================================
+
+echo -e "\n--- Changing Ownership (chown) ---"
+# Note: Changing ownership usually requires sudo because you are giving away a file.
+# We will use sudo here. If you don't have sudo, this step will fail (which is expected behavior).
+
+# WHAT: Change the owner of 'model_weights.h5' to the current user (noop) and group to 'root'.
+# WHY: In MLOps, we often change ownership to 'www-data' (web server) or a specific service user for security.
+# SYNTAX: chown user:group filename
+# WHAT IF WE CHANGE IT? If the web server doesn't own the file, your API will crash with "Permission Denied".
+echo "Attempting to change group ownership to root (requires password)..."
+sudo chown $USER:root model_weights.h5
+
+ls -l model_weights.h5
+
+echo -e "\n--- Cleanup ---"
+# Remove the lab directory
+cd ..
+rm -rf mlops_permission_lab
+echo "Lab completed. Directory cleaned up."
+
+
+
+
+
+
+

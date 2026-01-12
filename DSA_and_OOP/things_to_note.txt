@@ -69,4 +69,42 @@
 
 {
     it is best practice to name your methods as active verbs (e.g., calculate_loss, not loss_calculation)
+},
+
+{
+    S.O.L.I.D. Principles (The 5 Commandments)
+
+    1. S - Single Responsibility Principle (SRP)
+
+    The Rule: A class should have one, and only one, reason to change.
+
+    The Analogy: The Swiss Army Knife vs. The Chef's Knife. A Swiss Army Knife is cool, but if the scissors break, you have to throw the whole knife away. In code, if your User class handles "Logging In," "Saving to Database," and "Sending Emails," it does too much. If the Email API changes, you risk breaking the Login logic because they are in the same file. Separate them!
+
+
+    2. O - Open/Closed Principle
+
+    The Rule: Open for extension, Closed for modification.
+
+    The Analogy: The Coat. If you are cold, you put on a coat (Extend functionality). You do not perform surgery to sew an extra layer of skin onto your chest (Modify the core). You should be able to add new features to your app without rewriting the old code that already works.
+
+
+    3. L - Liskov Substitution Principle (LSP)
+
+    The Rule: A child class must be able to replace its parent without crashing the app.
+
+    The Analogy: The "Ostrich" Problem. Suppose you have a parent class Bird with a method fly(). You create a child class Ostrich. Since an Ostrich is a bird, it inherits fly(). But Ostriches can't fly. So, in your code, Ostrich.fly() throws an Error. This breaks Liskov. If I expect a Bird, I expect it to fly. If you hand me an Ostrich, my code crashes. Don't lie to your parent class.
+
+    
+    4. I - Interface Segregation Principle (ISP)
+
+    The Rule: Don't force a client to implement methods they don't use.
+
+    The Analogy: The Cable TV Bundle. You want to watch Sports. The cable company says, "Sure, but you have to buy the Cooking Channel, the News Channel, and the Knitting Channel too." That’s bad design. In code, don't make a massive IWorker interface with code(), manage(), and janitor(). If I implement a Programmer class, I shouldn't be forced to write an empty janitor() method just to satisfy the contract. Split the interfaces up!
+
+    
+    5. D - Dependency Inversion Principle (DIP)
+
+    The Rule: Depend on abstractions, not concrete implementations.
+
+    The Analogy: The Wall Socket. Your lamp doesn't need to know if the power comes from a Nuclear Plant, a Wind Farm, or a Hamster Wheel. It just cares about the "Socket" (the Abstraction). In code, your "App" shouldn't strictly depend on "PostgreSQL." It should depend on a "Database Interface." That way, if you swap to MySQL later, you don't have to rewrite the App.
 }

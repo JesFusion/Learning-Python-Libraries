@@ -1,4 +1,5 @@
 # Procedural Programming (a simple list of instructions) gets messy and hard to maintain ("spaghetti code") because data is global and separate from the functions that use it.
+import math
 import time
 import random
 from abc import ABC, abstractmethod
@@ -6,6 +7,9 @@ import numpy as np
 from jesse_custom_code.pandas_file import logs_path
 import logging
 logging.basicConfig(level = logging.INFO, format = '%(message)s')
+
+
+
 
 the_name, the_balance = "Jesse", 1000
 
@@ -3156,6 +3160,1382 @@ REPR Output: {repr(vector_a)}
     for a_log in logs_of_exp:
 
         print(a_log)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== CALLABLES & FACTORIES =====================================
+
+
+class TheDenseLayer:
+
+    """
+    A simulation of a PyTorch Linear Layer.
+    Demonstrates __call__, @classmethod, and @staticmethod.
+    """
+
+    def __init__(self, model_name, model_weights, model_bias):
+
+        """
+        The Standard Constructor.
+        It assumes you ALREADY have the specific weights ready.
+        """
+
+        self.m_name = model_name
+
+        self.m_weights = model_weights
+
+        self.m_bias = model_bias
+
+        print(f"[{self.m_name}] ::: Initialized with fixed weights")
+
+    def __call__(self, inp_value):
+
+        """
+        WHAT: Makes the object behave like a function.
+        WHY: Allows us to write 'layer(5)' instead of 'layer.forward(5)'.
+        WHAT IF: We used a normal method? We couldn't chain layers easily (layer2(layer1(x))).
+        """
+
+        print(f"[{self.m_name}] ::: __call__ triggered with input: {inp_value}")
+
+        lin_result = (inp_value * self.m_weights) + self.m_bias
+
+        model_result = self.RELU(lin_result)
+
+        return model_result
+
+    @staticmethod	
+    def RELU(value):
+
+        """
+        WHAT: A Utility function (Rectified Linear Unit).
+        WHY: It turns negative numbers to 0. It's pure math.
+        
+        KEY SYNTAX: No 'self'. This function doesn't care about 'self.weights'.
+        It only cares about the input 'x'.
+        """
+
+        return max(0, value)
+    
+    # ===================================== THE CLASS METHOD (@classmethod) =====================================
+
+    @classmethod
+    def rand_gen(cls, prefix):
+
+        """
+        WHAT: An 'Alternative Constructor' (Factory Pattern).
+        WHY: Sometimes we don't know the weights yet. We want the class to generate them for us.
+        
+        KEY SYNTAX: 'cls' refers to the 'DenseLayer' class itself, not an object.
+        Calling cls(...) is exactly the same as calling DenseLayer(...).
+        """
+
+        print(f"\n[TheDenseLayer] ::: Manufacturing a random layer for '{prefix}'...")
+
+        rand_weight = round(random.uniform(0.1, 1.0), 2)
+
+        rand_bias = round(random.uniform(-1.0, 1.0), 2)
+
+        an_instance = cls(
+        model_name = prefix,
+
+        model_weights = rand_weight,
+
+        model_bias = rand_bias
+        )
+
+        return an_instance
+
+
+
+# ===================================== EXECUTION =====================================
+
+if __name__ == '__main__':
+
+    # Initializing the class:
+    # This is a primitive way because data input can be of incosistent format Sometimes
+    fixed_layer = TheDenseLayer(
+    model_name = "Gemini-1.0.1",
+    model_bias = 1.4,
+
+    model_weights = 2.53
+    )
+
+
+    mr1 = fixed_layer(inp_value = 12.3) # __call__ makes us able to call the class like a function and pass parameters
+
+    print(f"Result 1: {mr1}")
+
+    # Pro way of Initializing class:
+    # we use the class method to process data with different format and then Initialize the class
+    random_layer = TheDenseLayer.rand_gen(prefix = "Oppo-3.4")
+
+    mr2 = random_layer(inp_value = -2) # using __call__ on the random_layer
+
+    print(f"Result 2: {mr2}")
+
+    # you can use a static method without creating an instance/object at all
+    print(f"\nDirect Static Utility usage: ReLU(-100) -> {TheDenseLayer.RELU(-100)}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== COMPOSITION OVER INHERITANCE =====================================
+
+
+class Processor:
+
+    """
+    A component class representing the Processor.
+    """
+
+    def __init__(self, cpu_cores, cpu_speed):
+
+        self.Ccores = cpu_cores
+
+        self.Cspeed = cpu_speed
+
+    
+    def CPU_process(self):
+
+        return f"Thinking with {self.Ccores} cores at {self.Cspeed} GHz..."
+    
+
+
+class GraphicsProcessingUnit:
+
+    """
+    A component class representing the Graphics Card.
+    """
+
+    def __init__(self, gpu_vram):
+
+        self.G_VRAM = gpu_vram
+
+    def GPU_render(self):
+
+        return f"Rendering pixels with {self.G_VRAM}GB VRAM..."
+
+
+
+class Computer:
+
+    """
+    The 'Composite' object. 
+    It doesn't inherit power; it OWNS components that provide power.
+    """
+
+    def __init__(self, computer_name, CPU_size, GPU_size):
+
+        self.c_name = computer_name
+        
+        self.c_size = CPU_size
+
+        self.g_size = GPU_size
+
+    def boot_computer(self):
+
+        print(f"--> Booting {self.c_name}...")
+
+        output = f"""
+{self.c_size.CPU_process()}
+
+{self.g_size.GPU_render()}
+"""
+        
+        print(output)
+    
+
+
+# ===================================== EXECUTION =====================================
+
+if __name__ == '__main__':
+
+    lame_cpu = Processor(cpu_cores = 2, cpu_speed = 2.4)
+
+    cutting_edge_cpu = Processor(cpu_cores = 16, cpu_speed = 5.0)
+
+    lame_gpu = GraphicsProcessingUnit(gpu_vram = 2)
+
+    cutting_edge_gpu = GraphicsProcessingUnit(gpu_vram = 24)
+
+
+    # Now let's build computers...
+
+    # we'll build a simple office computer, with simple CPU and GPU
+
+    office_computer = Computer(computer_name = 'HP Probook Business', CPU_size = lame_cpu, GPU_size = lame_gpu)
+
+    # gaming computer with powerful cpu and gpu
+    gaming_computer = Computer("Razer Blade 16", cutting_edge_cpu, cutting_edge_gpu)
+
+    # we can also create a custom computer with cheap cpu but powerful gpu
+    # NOTE: This would be impossible if we used inheritance to create the Computer class.
+
+    custom_computer = Computer(computer_name = "Kallo4v1", CPU_size = lame_cpu, GPU_size = cutting_edge_gpu)
+
+    office_computer.boot_computer()
+    
+    custom_computer.boot_computer()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== S.O.L.I.D. PRINCIPLES =====================================
+
+
+# ===================================== I - Interface Segregation Principle (ISP) =====================================
+
+'''
+Don't force a client to implement methods they don't use.
+'''
+
+class EPaymentProcessor(ABC):
+
+    @abstractmethod
+    def pay_money(self, amount):
+
+        pass
+
+
+class EAuthProcessor(ABC):
+
+    @abstractmethod
+    def twoFA(self):
+
+        pass
+
+
+
+
+# ===================================== O - Open/Closed Principle (OCP) && D - Dependency Inversion Principle =====================================
+
+'''
+Open for extension, Closed for modification
+
+Depend on abstractions, not concrete implementations
+'''
+
+class StripePayment(EPaymentProcessor, EAuthProcessor):
+
+    def pay_money(self, amount):
+        
+        print(f"Stripe: Sending ${amount}...")
+
+    def twoFA(self):
+        
+        print("Stripe: Verifying user via SMS...")
+
+
+class CCPayment(EPaymentProcessor):
+
+    def pay_money(self, amount):
+        
+        print(f"Credit Card: Charging ${amount}...")
+
+    """
+    CreditCardPayment did NOT implement IAuthProcessor. 
+    
+    Because of Interface Segregation, it wasn't forced to implement an empty 2FA method.
+    """
+
+
+
+# ===================================== L - Liskov Substitution Principle (LSP) =====================================
+
+"""
+A subclass (DebitCard) must behave exactly like its parent (CreditCard) so the system doesn't crash if we swap them.
+"""
+
+class DCPayment(CCPayment):
+
+    def pay_money(self, amount):
+
+        # takes the same inputs and gives the same outputs. Safe to swap.
+
+        print(f"Debit Card: Deducting ${amount} directly from bank...")
+
+
+
+# ===================================== S - Single Responsibility Principle (SRP) =====================================
+
+
+class LogTransactions:
+
+    """
+    Responsible ONLY for logging. Not for paying.
+    """
+
+    def log_transaction(self, message):
+
+        print(f"[LOG]: {message}")
+
+class PaymentRoute:
+
+    """
+    The High-Level Manager.
+    """
+
+    def __init__(
+    self,
+    the_method: EPaymentProcessor|StripePayment,
+    the_logger: LogTransactions
+    ):
+        
+        self.method = the_method
+
+        self.logger = the_logger
+
+    
+    def order_processing(self, the_amount):
+
+        self.logger.log_transaction(message = f'Initiating payment of ${the_amount}')
+
+        self.method.pay_money(amount = the_amount)
+
+        self.logger.log_transaction(message = 'Payment Successful')
+
+
+
+# ===================================== EXECUTION =====================================
+
+
+
+if __name__ == '__main__':
+
+    # instantiating the log and payment process class 
+    t_logger = LogTransactions()
+
+    stripe = StripePayment()
+
+    p_service = PaymentRoute(the_logger = t_logger, the_method = stripe)
+
+    p_service.order_processing(the_amount = 45000)
+
+    print()
+
+    debit_card = DCPayment()
+
+    second_service = PaymentRoute(the_method = debit_card, the_logger = t_logger)
+
+    second_service.order_processing(the_amount = 92300)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ===================================== COMMON DESIGN PATTERNS =====================================
+
+# ===================================== SINGLETON PATTERN (The "One and Only") =====================================
+
+
+class DBConnect:
+
+    __instance = None
+
+    def __new__(cls):
+
+        if cls.__instance is None:
+
+            print("Creating new Database Connection...")
+
+            cls.__instance = super(DBConnect, cls).__new__(cls)
+
+            cls.__instance.status = "Connected"
+
+        else:
+
+            print("Returning existing Database Connection...")
+
+        return cls.__instance
+
+
+    def SQL_query(self, query):
+
+        return f"Running '{query}' on DataBase instance {id(self)}"
+
+
+
+
+# ===================================== FACTORY PATTERN (The "Manager") =====================================
+
+
+class DecisionTreeModel:
+
+    def model_train(self) -> str:
+
+        return "Training Decision Tree..."
+
+
+class DeepNeuralNetwork:
+
+    def model_train(self):
+
+        return "Training Neural Network (Slow)..."
+
+
+
+class ModelSelection: # this class returns a model class depending on your input string
+
+    @staticmethod
+    def select_model(model: str) -> object:
+
+        if model == 'tree':
+
+            return DecisionTreeModel()
+        
+        elif model == 'nn':
+
+            return DeepNeuralNetwork()
+        
+        else:
+
+            raise ValueError("Unknown Model Type")
+
+
+
+
+# ===================================== OBSERVER PATTERN (The "Subscriber") =====================================
+
+class TrainTheModel:
+
+    """
+    The 'Subject' being observed.
+    """
+    
+    def __init__(self):
+        
+        self._the_subscribers = set() # we use a set because it's faster in data retrieval than a list
+
+
+    def sub_attach(self, a_observer):
+
+        self._the_subscribers.add(a_observer)
+
+    
+    def sub_detach(self, d_observer):
+
+        self._the_subscribers.discard(d_observer)
+
+    
+    def complete_training(self, model_accuracy: int|float):
+
+        print("\nTraining Complete! Notifying Subscribers...")
+
+        for subscriber in self._the_subscribers:
+
+            subscriber.update(model_accuracy)
+
+
+
+class EmailReminder:
+
+    """The Observer"""
+
+    def update(self, the_accuracy):
+
+        print(f"EMAIL: Model finished Training with accuracy = {the_accuracy}.\nSending to boss...")
+
+
+class TheSlackAlert:
+    """The Observer"""
+
+    def update(self, alert_accuracy):
+
+        print(f"SLACK: Ping! New Model accuracy: {alert_accuracy}")
+
+
+
+# ===================================== SCRIPT EXECUTION =====================================
+
+if __name__ == '__main__':
+
+    database_1 = DBConnect()
+    
+    database_2 = DBConnect()
+
+    a_model = ModelSelection.select_model('nn')
+
+    model_trainer = TrainTheModel()
+
+    email_system = EmailReminder()
+
+    slack_system = TheSlackAlert()
+
+
+    print(f'''
+======================================== Singleton Pattern ========================================
+          
+Are database_1 and database_2 the same object? {database_1 is database_2}
+
+
+===================================== Factory Pattern =====================================
+
+{a_model.model_train()}
+    ''')
+
+    # subscribing
+    model_trainer.sub_attach(email_system)
+
+    model_trainer.sub_detach(slack_system)
+    
+    model_trainer.sub_attach(slack_system)
+
+    # Triggering an Event
+    model_trainer.complete_training(0.91)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+np.random.seed(20)
+
+
+# here we create an abstract class called IPipelineStep
+class IPipelineStep(ABC):
+
+    @abstractmethod
+    def process(data):
+
+        pass
+
+
+"""
+Class DataLoader, NoiseFilter & ModelInference are children of IPipelineStep
+
+1. DataLoader: Takes a string (path), simulates loading, returns a list of numbers.
+
+2. NoiseFilter: Takes a list of numbers, removes negative values, returns the list.
+
+3. ModelInference: Takes a list of numbers, multiplies them by a weight (simulated prediction), returns the result.
+"""
+
+
+class DataLoader(IPipelineStep):
+
+    def process(self, path: str) -> list:
+
+        output = np.random.randn(1, 5)[0].round(3).tolist() # creates an array of 1 row and 5 columns, extracts the first list, approximates it and converts it to a list
+
+        return output
+
+
+class NoiseFilter(IPipelineStep):
+
+    def process(self, number_list: list) -> list:
+
+        return [number for number in number_list if number >= 0] # this filters a list and removes numbers that are negative
+
+
+class ModelInference(IPipelineStep):
+
+    def process(self, MI_number_list: list):
+
+        # here, we multiply a list by a weight
+
+        weight = np.random.rand() # generating a random wieght
+
+        output = np.array(MI_number_list) * weight
+        
+        return output.round(3).tolist() # we return the new list after rounding to 3 decimals
+
+
+class Pipeline:
+
+    # This is our most imortant class and the main engine 
+
+    def __init__(self, list_of_steps, s_print = 'yes'): # Initializing the class by collecting a list
+
+        # s_print is just a logic used to ensure that the print statement at the end of __init__ only comes out when you want it to
+
+        self.verify_data(input_data = list_of_steps) # a static method used to check data types of input values
+        
+        self.steps_list = list_of_steps
+
+        # if I say yes, print this. If not, shut up!
+        if not s_print == 'no':
+            print(f'New Class Created!\nsteps = {self.steps_list}\n')
+
+    def __call__(self, steps):
+
+        # the __call__ method runs when we use the object like a function
+        
+        self.steps_list = steps
+
+        print(f"Steps updated! New steps = {self.steps_list}") # vomit this statement if called
+
+    def __str__(self):
+        
+        # if a user prints a Pipeline class, show them this
+        return f"TitanFlow Pipeline with {len(self.steps_list)} steps\nSteps = {self.steps_list}"
+    
+    def __repr__(self):
+        
+        # if a dev tries to debug, show them this
+        return f'Pipeline(steps = {self.steps_list})'
+    
+    def __len__(self):
+
+        # show this if someone wants to se the number of steps (using len()) in a Pipeline class
+        return len(self.steps_list)
+
+    @classmethod
+    def from_preset(cls, name): # this classmethod helps us create a new instance using the method
+
+        the_list = name
+
+        if not name == 'default': # name must be 'default' for a new class to be created
+
+            raise ValueError(f'Inputed string "{name}" is not equal to \'default\'. Try using \'default\'')
+
+        # using a for loop to prepare the data for steps_list. We're exploiting Polymorphism here
+        for pre_processor in [DataLoader, NoiseFilter, ModelInference]:
+
+            the_list = pre_processor().process(the_list)
+
+        return cls(list_of_steps = the_list) # return a new instance
+
+
+    
+    def __getitem__(self, i: int): # logic for trying to extract an element from the setps list
+
+        if not self.type_check(i) == 'integer': # if I is not an integer, give the user a piece of your mind
+
+            raise ValueError('Index is not of integer type')
+
+        output = self.steps_list[i]
+
+        return output # return step with the index number
+    
+    @staticmethod
+    def verify_data(input_data): # this is our bouncer, used to make sure no bullshit data comes in
+        
+        # if input data is not a list, flag a TypeError
+        if not Pipeline.type_check(input = input_data) == 'list':
+
+            raise TypeError(f'The value "{input_data}" passed to \'list_of_steps\' is not a list. Try passing a list that isn\'t empty')
+
+        # if the input list is empty, flag a ValueError
+        elif not input_data:
+
+            raise ValueError("Input Data is empty")
+        
+        # or else just shut up and let it through
+        else:
+            pass
+    
+
+    def __setitem__(self, i: int, value): # here we can add new elements or modify existing ones to steps_list
+
+        if self.type_check(i) == 'float' or self.type_check(value) == 'Unknown':# index number must be an integer, if not flag an error
+
+            raise ValueError('Incorrect Index or Value type')
+
+        original_item = self.steps_list[i] # saving the original value to a variable
+
+        # modifying the element and Returning the output
+        self.steps_list[i] = value
+
+        output = f"Item '{original_item}' of index number {i} has been changed to '{value}'"
+
+        return output
+    
+    
+    def __add__(self, increment): # this makes it possible for us to add two Pipeline classes
+
+        # the object to be added must be a Pipeline class. Raise an error if it's not
+        if not self.type_check(increment) == 'Pipeline':
+
+            raise TypeError(f"Item \"{increment}\" is not of Pipeline type")
+        
+        # check if there's any value in the steps_list of the increment that is not a number (ie, neither float nor string)
+        for value in increment.steps_list:
+
+            if self.type_check(value) == 'Unknown': # if an element it's discovered that's not a number, throw a fit
+
+                raise ValueError(f'Value "{value}" is neither a float nor integer. Cannot properly add')
+        
+        # rather than using a loop for add the two lists together, I figured a faster way would be to convert both to numpy arrays and use numpy's vectorization superpower to fuse them together
+
+        # a future task would be to insert a logic before the code below, that verifies that the two lists are of the same length before converting both to numpy arrays and adding them
+        list_output = (np.array([self.steps_list]) + np.array([increment.steps_list]))[0].tolist()
+
+        # we return a new class with the new list. I don't want to see that print statement in __init__
+        output = Pipeline(list_of_steps = list_output, s_print = 'no')
+
+        return output
+    
+    @staticmethod
+    def type_check(input): # this method is the guy we call when we need something checked. He doesn't do anything, that's why he's a static method
+        
+        # creating a list of various types and different messages to represent them
+        the_type = [int, float, list, Pipeline]
+
+        message = ['integer', 'float', 'list', 'Pipeline', 'Unknown']
+
+        # we use a for loop to go through the types an return the appropriate message
+        for x in range(len(the_type)):
+
+            if isinstance(input, the_type[x]):
+
+                return message[x]
+            
+        return message[-1] # return Unknown if it's neither of the types in the the_type list
+    
+    
+    def __eq__(self, pipeline): # this method enables us to check if 2 Pipeline objects are equal
+        
+        # first of all, we have to check if the object we're comparing with is actually Pipeline
+        if not self.type_check(pipeline) == 'Pipeline':
+
+            raise TypeError(f"Item {pipeline} is not of Pipeline type")
+        
+        # 2 Pipeline objects are equal iff they have the same number of steps and the steps are of the same type in the same order
+        return self.steps_list == pipeline.steps_list
+    
+    def __mul__(self, number): # method __mul__ helps us to multiply 2 Pipeline objects together
+
+        num_type = self.type_check(number)
+
+        # validating the actual type of the parameter. If it's neither a float not integer, make'em know!
+        if num_type != 'float' and num_type != 'integer':
+
+            raise TypeError(f'Value "{number}" is neither an integer nor a float')
+        
+        number = math.trunc(abs(number)) # we remove the decimal part and the minus if it's there
+
+        # if number is 0, update self.steps_list to 0
+        if number == 0:  
+            self.steps_list = [0]
+        
+        # if number >= 0, reduce it by one so that we get a list with the same number of copies as number
+        else:
+            number -= 1 # if we didn't add this, inserting 2 to number would create 3 copies, and so on
+
+            self.steps_list += self.steps_list * number # duplicating the elements in the list
+
+        return Pipeline(list_of_steps = self.steps_list, s_print = 'no') # return a new class with the updated list
+
+
+
+class StepFactory: # this class enables us to create whatever class we desire depending on the string we input
+
+    # not much comment is needed here, you can simply read and understand it
+
+    def __call__(self, string: str) -> object:
+
+        if string == 'loader':
+
+            return DataLoader()
+        
+        elif string == 'filter':
+
+            return NoiseFilter()
+        
+        elif string == 'infer':
+
+            return ModelInference()
+        
+        else:
+
+            raise ValueError(f'Value "{string}" isn\'t a passable object. Enter a correct string')
+
+
+
+
+class SystemLogger(): # this class helps us write logs for future analysis. It implements Singleton, so you don't create more than one instance. We need only to write to one log file
+
+    users = None
+
+    def __new__(cls):
+        """
+        honestly, I have no idea what this code does, so I'm not even gonna attempt to comment it
+        """
+        if cls.users is None:
+
+            cls.users = super(SystemLogger, cls).__new__(cls)
+
+            print('Creating new instance of SystemLogger...\n')
+
+        else:
+            print('An instance of SystemLogger detected...\nUsing existing instance...')
+
+        return cls.users
+    
+    def log_message(self, input):
+
+        return f"[LOG] ::: {input}"
+
+
+
+class Dashboard: # this class sends a notification to the Dashboard
+
+    def alert(self, message):
+
+        return f"[NOTIFICATION] ::: {message}"
+    
+
+
+# ===================================== SCRIPT EXECUTION =====================================
+
+
+if __name__ == '__main__':
+
+    factory = StepFactory()
+
+    data_loader = factory(string = 'loader').process('k')
+
+    filterer = factory(string = 'filter').process(data_loader)
+
+    inferer = factory(string = 'infer').process(filterer)
+
+    pipeline1 = Pipeline(list_of_steps = inferer)
+
+    logger_1 = SystemLogger()
+
+    logger_2 = SystemLogger()
+
+
+    if not id(logger_1) == id(logger_2):
+
+        print("\nlogger_1 and logger_2 don't have the same id")
+
+    else:
+
+        print("\nlogger_1 and logger_2 have the same id")
+
+
+    pipeline2 = Pipeline(list_of_steps = [0])
+
+    pipeline2(steps = [2, 3, 4])
+
+    print(f"\npipeline2:\n{pipeline2}")
+
+    pipeline3 = pipeline1 + pipeline2
+
+    print(f"\npipeline3:\n{pipeline3}\n")
+
+    print(f"pipeline3 * 3:\n{pipeline3 * 3}\n")
+
+    print(f"Is pipeline1 equal to pipeline3: {pipeline1 == pipeline3}\n")
+
+    print(f"Number of steps in pipeline3: {len(pipeline3)}\n")
+
+    print(f"Third step in pipeline3: {pipeline3[2]}\n")
+
+    pipeline5 = Pipeline.from_preset(name = 'default')
+
+    print(f"Creating new class using from_preset:\n{pipeline5}")
+
+
+
+
+
+
 
 
 

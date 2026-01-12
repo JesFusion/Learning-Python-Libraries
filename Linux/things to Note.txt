@@ -4,4 +4,18 @@
     . (Dot): "Right here." Current folder.
 
     .. (Dot Dot): "One folder back." Parent folder.
+},
+
+{
+    chmod (Change Mode) Permissions numbers:
+
+    - Read (r) = 4
+    - Write (w) = 2
+    - Execute (x) = 1
+    - No Permission = 0
+
+},
+
+{
+    chown jesfusion:devs file.yaml --> "jesfusion owns this yaml file, and it belongs to the 'devs' team."
 }
