@@ -1,3 +1,440 @@
+#!/bin/bash
+# #!: The "Shebang". It tells the Linux kernel which interpreter to use (bash) to execute this file.
+
+# ==========================================
+# MODULE 1.1: THE ARCHITECTURE OF ISOLATION
+# ==========================================
+# This script demonstrates that Containers are NOT Virtual Machines.
+# They share the Host Kernel. We will prove this by comparing
+# the Host's Kernel version with the Container's Kernel version.
+
+# ------------------------------------------
+# 1. THE HOST KERNEL (Your Ubuntu Machine)
+# ------------------------------------------
+echo "--- [HOST] Checking Host Kernel Version ---"
+
+# 'uname -r' prints the release version of the kernel currently running in RAM.
+# We store this in a variable to compare later.
+# ANNOTATION:
+# uname: "Unix Name". A system call to get system info.
+# -r: The specific flag for "kernel release".
+# $(): Command Substitution. It runs the command inside the parenthesis first,
+#      captures the output, and assigns it to the variable HOST_KERNEL.
+HOST_KERNEL=$(uname -r)
+
+# ANNOTATION:
+# $: When used before a variable name (like $HOST_KERNEL), it "expands" the variable,
+#    meaning it replaces the variable name with its stored value.
+echo "Host Kernel: $HOST_KERNEL"
+echo "-------------------------------------------"
+
+# ------------------------------------------
+# 2. THE DOCKER ENGINE (Client vs Daemon)
+# ------------------------------------------
+echo "--- [ENGINE] Checking Client/Server Architecture ---"
+# Docker is split into two parts:
+# 1. The Client (CLI): What this script is running.
+# 2. The Server (Daemon): The background process (dockerd) managing the containers.
+# 'docker version' shows both. If the Daemon is down, this command fails.
+# ANNOTATION:
+# | (Pipe): Takes the output (stdout) of the left command and feeds it as input (stdin) to the right command.
+# grep: Global Regular Expression Print. Filters text.
+# -E: Extended Regex. Allows us to use special characters like '|' for logical OR.
+# "Client:|Server:|Version:": Matches lines containing "Client:" OR "Server:" OR "Version:".
+docker version | grep -E "Client:|Server:|Version:"
+
+# ------------------------------------------
+# 3. THE REGISTRY & THE IMAGE
+# ------------------------------------------
+echo "--- [REGISTRY] Pulling the 'alpine' image ---"
+# We use 'alpine' because it is tiny (5MB).
+# If the image is not found locally, the Daemon contacts the Registry (Docker Hub)
+# to download the layers.
+# WHY ALPINE? It's the standard "minimal" Linux image for testing.
+# ANNOTATION:
+# pull: Downloads the image layers from the registry to your local cache.
+# :latest: The "Tag". If you don't specify a tag, Docker assumes :latest.
+docker pull alpine:latest
+
+# ------------------------------------------
+# 4. THE PROOF (Shared Kernel)
+# ------------------------------------------
+echo "--- [PROOF] Running a Container to check ITS Kernel ---"
+# docker run: Creates AND Starts a container.
+# --rm: AUTOMATIC CLEANUP. This tells the Daemon: "As soon as this process exits, delete the container."
+#       Without this, you leave "zombie" stopped containers eating up disk space.
+# alpine: The image to use.
+# uname -r: The command to run INSIDE the container.
+# ANNOTATION:
+# variable=$(...): Again, capturing the output of the docker command into a variable.
+CONTAINER_KERNEL=$(docker run --rm alpine uname -r)
+
+echo "Container Kernel: $CONTAINER_KERNEL"
+
+# ------------------------------------------
+# 5. CONCLUSION
+# ------------------------------------------
+echo "-------------------------------------------"
+
+# ANNOTATION:
+# if [ ... ]; then: The standard bash syntax for conditional logic.
+# "..." : We quote the variables to prevent errors if they happen to be empty/null.
+# == : The string comparison operator. Checks if the text on the left matches the text on the right.
+if [ "$HOST_KERNEL" == "$CONTAINER_KERNEL" ]; then
+    echo "MATCH CONFIRMED: The Container is using the Host's Kernel."
+    echo "Proof that Docker is NOT a Virtual Machine."
+else
+    echo "MISMATCH: This should not happen on native Linux!"
+fi
+# fi: "Finish If". Closes the conditional block.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ==========================================
+# MODULE 1.2: CONTAINER ANATOMY & LIFECYCLE
+# ==========================================
+# We will manually manage the lifecycle of a "detached" container.
+# We use a Python image to run a simple HTTP server.
+
+CONTAINER_NAME="jesse-web-server"
+
+# ------------------------------------------
+# 1. CLEANUP (Idempotency)
+# ------------------------------------------
+# We check if a container with this name already exists to avoid conflicts.
+# /dev/null 2>&1 silences errors if the container doesn't exist.
+echo "--- [PRE-CHECK] Cleaning up old containers ---"
+
+# ANNOTATION:
+# rm -f: Force remove. Even if the container is running, this kills and deletes it.
+# > /dev/null: Redirects Standard Output (stdout) to the "black hole" (discards it).
+# 2>&1: Redirects Standard Error (stderr) to where Standard Output is going (the black hole).
+#       This ensures the script stays silent even if the container doesn't exist yet.
+docker rm -f $CONTAINER_NAME > /dev/null 2>&1
+
+# ------------------------------------------
+# 2. RUN (Create + Start) in DETACHED MODE
+# ------------------------------------------
+echo "--- [ACTION] Starting Python Web Server ---"
+# -d (Detached): Run in the background. Returns the CLI control to us immediately.
+#       Without -d, this script would freeze here waiting for the server to finish (which it never does).
+# --name: Assigns a human-readable DNS name. If we don't do this, Docker assigns a random name like "boring_wozniak".
+# -p 8080:8000: PORT MAPPING. Maps Host Port 8080 to Container Port 8000.
+#       (Linux Networking: We are punching a hole in the bridge network).
+# python:3.9-slim: The image. "slim" means it has Python but minimal extra junk (smaller size).
+# python -m http.server 8000: The COMMAND (PID 1). This starts a web server inside the container.
+# ANNOTATION:
+# Port Mapping (-p host:container):
+#       Traffic hits your Ubuntu IP on port 8080 -> Docker intercepts it -> forwards to container port 8000.
+docker run -d --name $CONTAINER_NAME -p 8080:8000 python:3.9-slim python -m http.server 8000 # container inside a container that is actually a process
+
+# ------------------------------------------
+# 3. INSPECTION (PS & INSPECT)
+# ------------------------------------------
+echo "--- [INSPECT] Listing Running Processes ---"
+# docker ps: Shows only RUNNING containers.
+# We grep for our name to filter the list.
+docker ps | grep $CONTAINER_NAME
+
+echo "--- [METADATA] Inspecting PID ---"
+# docker inspect: Returns a giant JSON object with all config details.
+# -f '{{...}}': Go-Template formatting. We extract specifically the Host Process ID (PID).
+# WHY? This proves the container is just a normal Linux process on your Ubuntu machine.
+# ANNOTATION:
+# .State.Pid: Navigates the JSON structure to find the process ID.
+# This variable assignment captures that PID so we can print it.
+PID=$(docker inspect -f '{{.State.Pid}}' $CONTAINER_NAME)
+echo "The Container is actually Linux Process ID: $PID"
+
+# ------------------------------------------
+# 4. LOGS (Standard Streams)
+# ------------------------------------------
+echo "--- [LOGS] Triggering Traffic & Reading Logs ---"
+# We use curl to send a request to localhost:8080.
+# The container receives it on port 8000.
+# The python server prints the access log to STDOUT.
+# ANNOTATION:
+# curl: Client URL. A command line tool to make web requests.
+# -s: Silent mode. Don't show the progress bar.
+curl -s "http://localhost:8080" > /dev/null
+
+# docker logs: Reads the STDOUT/STDERR pipe of the container.
+# This shows us what the python script printed.
+# ANNOTATION:
+# Since we ran in detached mode (-d), we can't see the output on our screen.
+# 'docker logs' goes back and fetches everything the container has printed since it started.
+docker logs $CONTAINER_NAME
+
+# ------------------------------------------
+# 5. SHUTDOWN (Stop vs Kill vs Prune)
+# ------------------------------------------
+echo "--- [SHUTDOWN] Stopping the container ---"
+# docker stop: Sends SIGTERM (Signal 15). Tells the app "Please finish up and close."
+# If it doesn't close in 10s, Docker sends SIGKILL.
+docker stop $CONTAINER_NAME
+
+echo "--- [CLEANUP] Removing the container artifact ---"
+# docker rm: Deletes the stopped container layer from disk.
+# If we don't do this, 'docker ps -a' would show it as "Exited".
+# ANNOTATION:
+# A stopped container still takes up disk space (logs, writable layer). 'rm' frees that space.
+docker rm $CONTAINER_NAME
+
+echo "--- [GARBAGE COLLECTION] System Prune ---"
+# docker system prune -f: The Nuclear Option.
+# Deletes ALL stopped containers, unused networks, and dangling images.
+# WARNING: Extremely destructive. We use it here to ensure a clean slate.
+# ANNOTATION:
+# -f: Force. Don't ask for confirmation ("Are you sure?"). Just do it.
+docker system prune -f
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#!/bin/bash
+
+# ==========================================
+# MODULE 1.3: THE INTERACTIVE SHELL & EXEC
+# ==========================================
+# Demonstrates how to "hack" into a running container to debug it.
+# This replaces the need for SSH.
+
+CONTAINER_NAME="jesse-sleeper"
+
+# 1. Start a "Dummy" Container
+# We run 'sleep 300' just to keep the container alive so we can hack it.
+echo "--- Starting a sleeper container ---"
+
+# ANNOTATION:
+# ubuntu:latest: A much larger image than Alpine, containing standard GNU tools.
+# sleep 300: This is the critical part. A container only lives as long as its main process.
+#            If we didn't run 'sleep', the Ubuntu container would start, see nothing to do, and exit immediately.
+#            We are "buying time" (300 seconds) to mess around inside.
+docker run -d --name $CONTAINER_NAME ubuntu:latest sleep 300
+
+# ------------------------------------------
+# 2. EXEC (The Hijack)
+# ------------------------------------------
+echo "--- [EXEC] Running a command INSIDE the container ---"
+# docker exec: Runs a NEW command in an EXISTING container.
+# It joins the existing Namespaces (Network, Mount, PID).
+# This is NOT starting a new container; it's entering the current one.
+# We run 'ls -la' to list files inside the container's root directory.
+
+# ANNOTATION:
+# exec: Short for "execute". It spawns a secondary process side-by-side with the main process (sleep).
+# ls -la /var: We are asking the container to list the contents of its internal /var directory.
+# This proves we are looking at the container's filesystem, not your host's filesystem.
+docker exec $CONTAINER_NAME ls -la /var
+
+# ------------------------------------------
+# 3. INSTALLING TOOLS (The "Bad Practice")
+# ------------------------------------------
+echo "--- [DEBUGGING] Installing vim (Simulated) ---"
+# In a disaster scenario, you might need to install tools to debug.
+# NOTE: This is "Mutable Infrastructure". Changes here disappear if the container is deleted.
+# We pass 'apt-get update' into the container.
+
+# ANNOTATION:
+# apt-get update: Refreshes the package lists inside the Ubuntu container.
+# > /dev/null 2>&1: We've seen this before. It mutes the massive wall of text apt-get usually spits out.
+# This shows that we can run complex administrative commands (like installing software) inside a live container.
+docker exec $CONTAINER_NAME apt-get update > /dev/null 2>&1
+echo "Package list updated inside container (PID: $CONTAINER_NAME)."
+
+# ------------------------------------------
+# 4. THE INTERACTIVE SHELL INSTRUCTION
+# ------------------------------------------
+# We cannot script an interactive shell session easily because it requires a user TTY.
+# Instead, we generate the command for YOU to run.
+
+# ANNOTATION:
+# You cannot run 'docker exec -it' inside a non-interactive bash script because the script
+# doesn't have a keyboard attached to it effectively.
+# That is why the script pauses here to tell YOU to do it manually.
+
+echo ""
+echo "========================================================="
+echo "   INTERACTIVE EXERCISE REQUIRED"
+echo "========================================================="
+echo "The script has set up a running Ubuntu container named '$CONTAINER_NAME'."
+echo "You must now manually 'SSH' into it using Docker."
+echo ""
+echo "RUN THIS COMMAND IN YOUR TERMINAL:"
+echo "   docker exec -it $CONTAINER_NAME /bin/bash"
+echo ""
+echo "EXPLANATION OF FLAGS:"
+echo "   -i (Interactive): Keep STDIN open (so it can read your keyboard)."
+echo "   -t (TTY): Allocate a pseudo-terminal (so you get a prompt like root@containerID:/#)."
+echo "   /bin/bash: The specific shell program we want to run."
+echo ""
+echo "TASK ONCE INSIDE:"
+echo "1. Type 'ps aux' to see that only 'sleep' and 'bash' are running."
+echo "2. Type 'exit' to leave the container."
+echo "3. Run 'docker rm -f $CONTAINER_NAME' to clean up."
+echo "========================================================="
+
+
+
+
 Module 1: The Metal - Lab 01
 
 Student: Nwachukwu Jesse
