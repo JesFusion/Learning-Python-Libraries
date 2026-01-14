@@ -7,7 +7,19 @@
 },
 
 {
-    Axes-Level Functions: sns.scatterplot, sns.boxplot, sns.heatmap.
+    Axes-Level Functions:
+    - sns.scatterplot()
+    - sns.boxplot()
+    - sns.heatmap()
+    - sns.lineplot()
+    - sns.histplot()
+    - sns.kdeplot()
+    - sns.rugplot()
 
-    Figure-Level Functions: sns.relplot, sns.catplot, sns.displot.
+    Figure-Level Functions:
+    - sns.relplot
+    - sns.catplot
+    - sns.displot
+    - sns.lmplot()
+    - sns.pairplot()
 }

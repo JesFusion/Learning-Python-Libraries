@@ -1,9 +1,13 @@
-import numpy as np
+import os
 import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
+matplotlib.use('TkAgg')
+from dotenv import load_dotenv
+import matplotlib.pyplot as plt
+from sqlalchemy import create_engine
+load_dotenv()
 
 array_1 = np.array([2, 1, 3, 0, 233])
 
@@ -1506,6 +1510,257 @@ joint_grid.fig.suptitle("JointGrid with Marginal Rugs: 2D Distribution Audit")
 
 plt.show()
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class IngestAndExtract:
+
+    """
+    A class for sourcing data, uploading to database and extracting it
+    """
+
+    def __init__(self,
+        database_engine,
+        table_name = str
+    ):
+
+        self.engine = database_engine
+
+        self.table = table_name
+
+        self.data_url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/diamonds.csv"
+
+    def ingest(self):
+
+        raw_data = pd.read_csv(self.data_url)
+
+        raw_data.to_sql(
+            con = self.engine,
+            if_exists = 'replace',
+            index = False,
+            name = self.table
+        )
+
+    def extract(self):
+
+        if self.engine:
+
+            dataset = pd.read_sql_query(
+                sql = f"SELECT * FROM {self.table} LIMIT 8500",
+
+                con = self.engine
+            )
+
+            return dataset
+        
+        else:
+            return None
+
+
+
+inst = IngestAndExtract(
+    database_engine = create_engine(os.getenv("POSTGRE_CONNECT")),
+    table_name = "diamonds_sales"
+)
+
+
+
+if False:
+
+    inst.ingest()
+
+    print(f"Data successfully ingested into PostgreSQL database as '{inst.table}'")
+
+if True:
+
+    diamonds_dataset = inst.extract()
+
+    print(diamonds_dataset.head().to_markdown())
+
+
+sns.set_theme(style = "darkgrid", context = 'talk')
+
+figure, axes = plt.subplots(
+    ncols = 2, nrows = 1,
+    figsize = (12, 7), 
+    # constrained_layout = True
+)
+
+axes = axes.flatten() # flattening the axes from 2D to 1D
+
+
+axes[0].set_title("KDE")
+
+sns.kdeplot(
+    data = diamonds_dataset, ax = axes[0],
+    bw_adjust = 1, x = 'carat',
+    fill = True, color = 'orange',
+    alpha = 0.3, linewidth = 2
+)
+
+
+sns.rugplot(
+    data = diamonds_dataset,
+    x = 'carat',
+    height = 0.13, # height of the ticks relative to the y-axis
+    color = 'gray', ax = axes[1],
+    alpha = 0.1 # this helps us effectively identify regions with high density (Clumping)
+)
+
+axes[1].set_title("Rug Plot")
+
+figure.suptitle("Distribution of Diamond Carats (KDE + Rug Plot)")
+
+for i in range(2):
+
+    axes[i].set_xlabel("Carat Weight")
+    
+    axes[i].set_ylabel("Density")
+
+plt.subplots_adjust(top = 0.85)
+
+plt.close(fig = figure)
+
+
+
+
+# ===================================== MARGINAL DISTRIBUTIONS (JOINTGRID) =====================================
+
+joint_axes = sns.JointGrid(
+    data = diamonds_dataset,
+    x = 'carat',
+    y = 'price',
+    height = 8
+)
+
+joint_axes.plot_joint( # plot a scatterplot at the graph on the axes
+    sns.scatterplot,
+    s = 10,
+    alpha = 0.3, color = 'gray'
+)
+
+
+# plot a scatterplot and rigplot on the mergins of the axes
+joint_axes.plot_marginals(
+    sns.rugplot,
+    height = 0.26,
+    color = 'violet',
+    alpha = 0.1
+)
+
+joint_axes.plot_marginals(
+    sns.kdeplot,
+    bw_adjust = 1,
+    color = 'blue',
+    linewidth = 1, fill = True, alpha = 0.1
+)
+
+plt.subplots_adjust(top = 0.87)
+
+joint_axes.fig.suptitle(
+    "Scatter with Marginal Rugs and KDE Plot (Clumping Detection)",
+    fontsize = 15,
+    color = 'blue'
+)
+
+
+plt.show()
 
 
 
