@@ -1883,3 +1883,301 @@ plt.show()
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+database_engine = create_engine(
+    os.getenv("POSTGRE_CONNECT")
+)
+
+class ETL:
+
+    def ingest_data(self):
+        """
+        Simulates the ETL (Extract, Transform, Load) process.
+        """
+
+        
+
+        classification_data = pd.DataFrame(    
+            data = {
+            'col_1': self.generate_data(info = ['uniform']),
+
+            'col_2': self.generate_data(info = ['uniform']),
+
+            'is_spam?': self.generate_data(info = ['randint', 0, 2]) # either 0 or 1 (np.random.randint(0, 2, data_size))
+        })
+
+        regression_data = pd.DataFrame(
+            data = {
+                'square_feet': self.generate_data(info = ['randint', 500, 4000]),
+
+                'number_of_rooms': self.generate_data(info = ['randint', 1, 10]),
+
+                'house_price': self.generate_data(info = ['randint', 100000, 1000000]),
+            }
+        )
+
+        classification_data.to_sql(
+            "classification_data",
+            database_engine,
+            if_exists = 'replace',
+            index = False
+        )
+
+        regression_data.to_sql(
+            name = "house_dataset",
+            if_exists = 'replace',
+            index = False,
+            con = database_engine
+    )
+        
+    @classmethod
+    def generate_data(self, info: list) -> np.array:
+
+        data_size = 40000
+
+        if info[0] == "uniform":
+
+            return np.random.rand(data_size)
+
+        elif info[0] == "randint":
+
+            return np.random.randint(
+                
+                int(info[1]),
+
+                int(info[2]),
+                
+                data_size
+            )
+        
+        else:
+            return None
+
+
+
+    def extract_data(self):
+
+        """
+        Pull data from SQL database for Modeling
+        """
+
+        class_data = pd.read_sql_query(
+            "SELECT * FROM classification_data",
+            con = database_engine,
+        )
+
+        reg_data = pd.read_sql_query(
+            "SELECT * FROM house_dataset",
+            con = database_engine
+        )
+
+        return class_data, reg_data
+
+
+etl_process = ETL()
+
+if False:
+
+    etl_process.ingest_data()
+
+    print("Done Ingesting Dataset!")
+
+if True:
+
+    classification_dataset, regression_dataset = etl_process.extract_data()
+
+
+# ===================================== CLASSIFICATION METRICS (Accuracy) =====================================
+
+features_x = classification_dataset[['col_1', 'col_2']]
+
+target_y = classification_dataset['is_spam?']
+
+X_train, X_test, y_train, y_test = train_test_split(features_x, target_y,test_size = 0.2, random_state = 20)
+
+# instantiating a LogisticRegression model to test our metrics
+logistic_model = LogisticRegression()
+
+# training the model...
+if True:
+    logistic_model.fit(X_train, y_train)
+
+    print("Done Training Logistic Model!")
+
+
+logistic_pred = logistic_model.predict(X_test)
+
+
+
+logistic_accuracy = accuracy_score(
+    y_true = y_test,
+    y_pred = logistic_pred
+)
+
+
+print(f'''
+(Logistic Regression): True Labels vs. Model Predictions
+{
+    pd.DataFrame({
+        'true_value': y_test.to_numpy()[:10],
+
+        'model_prediction': logistic_pred[:10]
+    })
+}
+
+Accuracy Score: {logistic_accuracy:.2f} (or {logistic_accuracy * 100:.1f}%)
+''')
+
+
+
+
+# ===================================== REGRESSION METRICS (MSE & R2) =====================================
+
+X_regression = regression_dataset[['square_feet', 'number_of_rooms']]
+
+y_regression = regression_dataset['house_price']
+
+
+X_train_reg, X_test_reg, y_train_reg, y_test_reg = train_test_split(X_regression, y_regression, test_size = 0.2, random_state = 20)
+
+# instantiating the linear regression model and training it
+linear_model = LinearRegression()
+
+if True:
+
+    linear_model.fit(X_train_reg, y_train_reg)
+
+    print("Done Training Linear Model!")
+
+
+
+linear_pred = linear_model.predict(X_test_reg)
+
+# MSE = ((True_Value - Predicted_Value)^2) / (n)
+
+linear_mse = mean_squared_error(
+    y_true = y_test_reg,
+
+    y_pred = linear_pred
+)
+
+# R2 SCORE is a statistical measure of how close the data are to the fitted regression line. It has a range of -infinity to 1.0. (1.0 is perfect).
+linear_r2 = r2_score(
+    y_true = y_test_reg,
+
+    y_pred = linear_pred
+)
+
+test_vs_pred = pd.DataFrame({
+    'true_value': y_test_reg.to_numpy(),
+
+    'model_prediction': linear_pred
+})
+
+for col in list(test_vs_pred.columns):
+
+    test_vs_pred[col] = test_vs_pred[col].map('${:,.2f}'.format)
+
+
+print(f'''
+(Linear Regression): True Prices vs. Model Predicted Prices
+{test_vs_pred.sample(11).to_markdown()}
+
+Mean Squared Error: {linear_mse:,.2f}
+MSE is hard to understand because the dollar amount was squared. To fix this we use RMSE, which is the square root of MSE
+
+Root Mean Squared Error (RMSE): {np.sqrt(linear_mse):,.2f} (This is the actual value in dollars)
+
+R2 Score: {linear_r2:.4f}
+''')
+
+
+
+
+
+
+
+
+
+
+
+
