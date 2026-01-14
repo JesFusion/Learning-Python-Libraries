@@ -1,23 +1,23 @@
 import os
 import joblib
-import numpy as np
+import matplotlib
 import numpy as np
 import pandas as pd
-from dotenv import load_dotenv
-import matplotlib
 matplotlib.use('TkAgg')
+from dotenv import load_dotenv
 import matplotlib.pyplot as plt
-from sqlalchemy import create_engine, text
-from sklearn.datasets import load_iris
-from jesse_custom_code.pandas_file import postgre_connect, PDataset_save_path as psp, dataset_save_path
-from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-from jesse_custom_code.build_database import PSQLDataGenerator
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder, OrdinalEncoder, PolynomialFeatures
-from sklearn.model_selection import train_test_split
-from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.linear_model import LinearRegression, Ridge, Lasso, LogisticRegression, ElasticNet
+from sklearn.datasets import load_iris
+from sklearn.impute import SimpleImputer
+from sklearn.datasets import load_diabetes
+from sqlalchemy import create_engine, text
+from sklearn.model_selection import train_test_split
+from jesse_custom_code.build_database import PSQLDataGenerator
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.metrics import accuracy_score, mean_squared_error, mean_absolute_error, r2_score
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, LogisticRegression, ElasticNet
+from jesse_custom_code.pandas_file import postgre_connect, PDataset_save_path as psp, dataset_save_path
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder, OrdinalEncoder, PolynomialFeatures
 
 
 
@@ -2009,7 +2009,7 @@ class ETL:
             con = database_engine
     )
         
-    @classmethod
+    @staticmethod
     def generate_data(self, info: list) -> np.array:
 
         data_size = 40000
@@ -2169,6 +2169,278 @@ Root Mean Squared Error (RMSE): {np.sqrt(linear_mse):,.2f} (This is the actual v
 
 R2 Score: {linear_r2:.4f}
 ''')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class DiabetesETL:
+
+    def __init__(self, database_engine, name_of_table: str):
+
+        self.engine = database_engine
+        self.table_name = name_of_table
+
+    @staticmethod
+    def data_acquisition():
+
+        data = load_diabetes(
+            # return_X_y = 
+            as_frame = True
+        )
+
+        dataset = data.frame
+
+        return dataset
+
+    def data_ingest(self):
+        
+        the_dataset = self.data_acquisition()
+
+        the_dataset.to_sql(
+            name = self.table_name,
+            con = self.engine,
+            if_exists = 'replace',
+            index = False
+        )
+
+    def extract_data(self, the_query: str):
+        
+        extracted_dataset = pd.read_sql(
+            sql = the_query,
+            con = self.engine
+        )
+
+        return extracted_dataset
+
+
+# instantiating the class...
+
+table_name = 'diabetes_report'
+
+diabetes = DiabetesETL(
+    database_engine = create_engine(os.getenv("POSTGRE_CONNECT")),
+    name_of_table = table_name
+)
+
+if False:
+
+    diabetes.data_ingest()
+
+    print(f'Uploading Diabetes data to SQL with name "{table_name}"')
+
+if True:
+
+    diabetes_dataset = diabetes.extract_data(
+        the_query = f"SELECT * FROM {table_name}"
+    )
+
+
+# identifying features and targets
+x_side = diabetes_dataset.drop(
+    columns = ['target'], axis = 1
+)
+
+y_side = diabetes_dataset['target']
+
+# splitting data into training and testing
+X_train, X_test, y_train, y_test = train_test_split(x_side, y_side,test_size = 0.2, random_state = 20)
+
+
+# firing up our LinearRegression class (model) and training it on the dataset
+the_AI_model = LinearRegression()
+
+the_AI_model.fit(X_train, y_train)
+
+
+
+# 1. Intercept: This is the value of y when all X are 0
+
+model_intercept = (the_AI_model.intercept_)
+
+model_coefficients = the_AI_model.coef_
+
+
+# mapping feature names to coefficients...
+feature_coef = pd.DataFrame({
+    "Feature": x_side.columns,
+    "C_Weight": model_coefficients
+})
+
+feature_coef['A_Weight'] = feature_coef['C_Weight'].abs()
+
+feature_coef = feature_coef.sort_values(
+    by = "A_Weight",
+    ascending = False
+)
+
+feature_coef = feature_coef.reset_index().drop(columns = ['index'], axis = 1)
+
+
+print(feature_coef.to_markdown())
+
+MI_feature = feature_coef.iloc[0] # MI_feature = Most Important Feature
+
+status = None
+
+if MI_feature['C_Weight'] > 0:
+
+    status = "INCREASES"
+
+else:
+
+    status = "DECREASES"
+
+
+print(f'''
+===================================== Model Interpretation =====================================
+
+Model Intercept: {model_intercept:.3f}
+
+Table of Features and their various coefficients:
+{feature_coef.to_markdown()}
+
+The most important feature is {MI_feature['Feature']} with a coefficient of {MI_feature['C_Weight']:.2f}
+
+Deduction: As '{MI_feature['Feature']}' increases, disease progression {status}
+''')
+
+
+
+# ===================================== Making Predictions =====================================
+
+# acquiring model predicitons...
+model_prediction = the_AI_model.predict(X_test)
+
+# we create a table with model predictions vs. actual values so we can see it better
+prediction_table = pd.DataFrame({
+    "y_test": y_test.to_numpy(),
+
+    "y_pred": model_prediction
+})
+
+# firing up regression metrics so we can better quantify our model's performance
+
+model_mse = mean_squared_error(y_pred = model_prediction, y_true = y_test)
+
+model_r2 = r2_score(y_true = y_test, y_pred = model_prediction)
+
+model_rmse = np.sqrt(model_mse)
+
+
+print(f'''
+Table of test data vs. Model predictions:
+      
+{prediction_table.sample(7).to_markdown()}
+
+MSE: {model_mse:.2f}
+
+R2: {model_r2:.2f}
+
+RMSE: {model_rmse:.2f}
+''')
+
+
+
 
 
 
