@@ -757,3 +757,261 @@ echo "Lab completed. Directory cleaned up."
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#!/bin/bash
+
+# FILE: 02_privilege_check.sh
+# SEGMENT: 3.4 Elevated Privileges
+# GOAL: Audit user privileges, interact with sudo, and understand root access.
+
+# ==========================================
+# PART 1: IDENTITY MANAGEMENT
+# ==========================================
+
+echo "--- Who am I? ---"
+# WHAT: Print the current username.
+# WHY: In automation scripts, you need to know if you are 'jesse' or 'root' to decide paths (e.g., /home/jesse vs /root).
+whoami
+
+echo "--- User ID Checks ---"
+# WHAT: Print the User ID (uid) and Group IDs (gid).
+# WHY: The 'root' user always has uid=0. This is how scripts check if they have superpowers.
+id
+
+# ==========================================
+# PART 2: SUDO AUDIT (Managing Sudoers)
+# ==========================================
+
+echo -e "\n--- Checking Sudo Privileges ---"
+# WHAT: List (-l) the allowed commands for the current user.
+# WHY: This reads the /etc/sudoers file effectively. It tells you if you can run ALL commands or just specific ones.
+# WHAT IF WE CHANGE IT? If this fails, you are not in the 'sudo' group and cannot administer the server.
+sudo -l
+
+# ==========================================
+# PART 3: ELEVATED EXECUTION (sudo)
+# ==========================================
+
+echo -e "\n--- Executing as Root (sudo) ---"
+# WHAT: Update the file modification timestamp using root privileges.
+# WHY: If a file belongs to root (like system logs), a normal 'touch' fails. 'sudo touch' works.
+# This proves we can borrow root powers for a single command.
+sudo touch /tmp/root_test_file
+
+# Verify owner is root
+ls -l /tmp/root_test_file
+
+# Clean up
+sudo rm /tmp/root_test_file
+
+# ==========================================
+# PART 4: THE ROOT SHELL (sudo su)
+# ==========================================
+
+echo -e "\n--- Concept: Switching to Root Shell ---"
+# We DO NOT execute 'sudo su' in a script because it launches a new interactive shell
+# and pauses the script until you exit that shell.
+# I will print the command you would use manually.
+
+echo "To switch entirely to the root user (The God Mode), you would run:"
+echo "  $ sudo su"
+echo "Warning: Your prompt will change from '$' to '#'. Proceed with caution."
+
+# Checking for root in a script (Standard Pattern)
+if [ "$EUID" -ne 0 ]; then
+  echo "Current status: You are NOT running this script as root (Safe)."
+else
+  echo "Current status: You ARE running as root (Dangerous)."
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#!/bin/bash
+
+# FILE: 03_package_ops.sh
+# SEGMENT: 4.1 Debian Package Management
+# GOAL: Manage the software lifecycle (Update, Install, Remove, Purge).
+
+# NOTE: This script uses 'sudo' heavily as package management is a system-level task.
+
+# ==========================================
+# PART 1: REFRESHING THE CATALOG (apt update)
+# ==========================================
+
+echo "--- Step 1: Updating Package Catalog ---"
+# WHAT: Downloads the latest package lists from the repositories.
+# WHY: Your local computer doesn't know a new version of 'git' exists until you run this.
+# WHAT IF WE SKIP IT? 'apt install' might fail because it tries to download an old version that no longer exists on the server.
+sudo apt update
+
+# ==========================================
+# PART 2: INSTALLATION (apt install)
+# ==========================================
+
+echo -e "\n--- Step 2: Installing a Tool (Example: 'htop') ---"
+# WHAT: Installs the 'htop' system monitor.
+# PARAMETER -y: Automatically answer "yes" to prompts.
+# WHY: In automated MLOps pipelines (Dockerfiles), the build fails if the computer waits for you to press 'y'.
+sudo apt install -y htop
+
+# Verify installation
+which htop
+
+# ==========================================
+# PART 3: UPGRADING (apt upgrade)
+# ==========================================
+
+echo -e "\n--- Step 3: Upgrading Installed Software (Simulation) ---"
+# WHAT: Upgrades all currently installed packages to their newest versions found in the catalog.
+# PARAMETER -s: Simulate (Dry-Run).
+# WHY: We strictly use simulation here because running a full upgrade on your workstation might take 30 minutes.
+# WHAT IF WE CHANGE IT? Removing '-s' would actually upgrade your OS packages.
+sudo apt upgrade -s
+
+# ==========================================
+# PART 4: REMOVAL vs PURGE
+# ==========================================
+
+echo -e "\n--- Step 4: Removing a Tool (apt remove) ---"
+# WHAT: Removes the binaries for 'htop' but KEEPS configuration files.
+# WHY: If you plan to reinstall it later and want your custom color settings back, use remove.
+sudo apt remove -y htop
+
+echo -e "\n--- Step 5: Purging a Tool (apt purge) ---"
+# WHAT: Removes binaries AND configuration files.
+# WHY: You messed up the config so bad you want a clean slate, or you want to free up every byte of disk space.
+# We will reinstall htop just to purge it, to demonstrate the command.
+sudo apt install -y htop > /dev/null # Quiet install
+sudo apt purge -y htop
+
+echo "Package operations complete."
+
+
+
+
+
