@@ -79,4 +79,14 @@
     chown (Change Ownership):
     
     chown jesfusion:devs file.yaml --> "jesfusion owns this yaml file, and it belongs to the 'devs' team."
+},
+
+{
+    NEVER use sudo with pip
+}
+
+{
+    > and >> are redirection operators
+    
+    They tell the computer: "Don't print the results of this command to the screen; send them to a file instead"
 }
