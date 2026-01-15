@@ -2,6 +2,158 @@
 
 This Repo is a personal collection of small learning projects, reference notes, and example code used while learning and practicing the langiages and tools needed to become a __*Machine Learning Enginner*__. The materials are organized loosely by topic and are intended as lightweight, runnable examples and notes you can read and adapt.
 
+## Repo Structure
+```
+.
+├── assignment.txt
+├── build.sh
+├── Docker
+│   ├── Docker_Folders
+│   │   ├── fol_2_1
+│   │   │   ├── build.sh
+│   │   │   ├── Dockerfile
+│   │   │   └── script.py
+│   │   └── fol_2_2
+│   │       ├── build.sh
+│   │       ├── Dockerfile
+│   │       └── greet_script.py
+│   ├── docker_init.sh
+│   ├── Gemini_Code.txt
+│   ├── script_1.sh
+│   ├── script_2.txt
+│   └── things to Note.txt
+├── DSA_and_OOP
+│   ├── DSA_Learning
+│   │   ├── Gemini_Code.py
+│   │   ├── script_1.py
+│   │   └── script_2.py
+│   ├── OOP_Learning
+│   │   ├── class_holder.py
+│   │   ├── Gemini_Code.py
+│   │   ├── script_1.py
+│   │   └── script_2.py
+│   ├── prompt format.txt
+│   └── things_to_note.txt
+├── FastAPI
+│   ├── Gemini_Code.py
+│   ├── main.py
+│   ├── __pycache__
+│   │   ├── main.cpython-312.pyc
+│   │   └── the_client.cpython-312.pyc
+│   ├── script_2.py
+│   ├── the_client.py
+│   └── things to Note.txt
+├── learning_git_and_numpy
+│   ├── numpy-learning-project
+│   │   ├── 01_first_array.py
+│   │   ├── 02_array_creation.py
+│   │   ├── 03_sequential_arrays.py
+│   │   ├── 04_random_arrays.py
+│   │   ├── 06_array_attributes.py
+│   │   ├── 07_array_indexing.py
+│   │   ├── 08_advanced_slicing.py
+│   │   ├── 09_image_processor.py
+│   │   ├── 10_boolean_masks.py
+│   │   ├── 11_integer_array_indexing.py
+│   │   ├── 12_vectorization.py
+│   │   ├── 13_vectorized_math.py
+│   │   ├── 14_standard_ufuncs.py
+│   │   ├── 15_broadcasting.py
+│   │   ├── 16_review_script.py
+│   │   ├── 17_broadcasting_rules.py
+│   │   ├── 18_broadcasting_ml.py
+│   │   ├── 19_newaxis.py
+│   │   ├── 20_linalg_fix.py
+│   │   ├── 21_reshape.py
+│   │   ├── 22_join_split.py
+│   │   ├── 23_transpose.py
+│   │   ├── 24_data_pipeline.py
+│   │   ├── 25_dims.py
+│   │   ├── 26_aggregations.py
+│   │   ├── 27_statistics.py
+│   │   ├── 28_assignment_analysis.py
+│   │   ├── Gemini_Code.py
+│   │   ├── huge_data.csv
+│   │   ├── large_dset.npy
+│   │   ├── script_1.py
+│   │   ├── script_2.py
+│   │   └── things to note.txt
+│   ├── pandas_lib.rar
+│   └── Text Files
+│       ├── assignment.txt
+│       └── how to write commit message.txt
+├── Linux
+│   ├── Gemini_Code.txt
+│   ├── script_1.sh
+│   ├── script_2.txt
+│   └── things to Note.txt
+├── Logging
+│   ├── Gemini_Code.py
+│   ├── script_1.py
+│   ├── script_2.py
+│   └── things to Note.txt
+├── logs
+│   ├── numpy_status_report.log
+│   └── oop_status_report.log
+├── Matplotlib_and_Seaborn
+│   ├── Gemini_Code.py
+│   ├── script_1.py
+│   ├── script_2.py
+│   ├── test_file.ipynb
+│   └── things to Note.txt
+├── Projects
+│   └── SQL, Pandas, NumPy, and Git
+│       └── Project_1__The First Commit
+│           ├── query.sql
+│           ├── README.md
+│           ├── script.py
+│           └── sqlite_database.db
+├── README.md
+├── requirements.txt
+├── Saved_Datasets_and_Models
+│   ├── Datasets
+│   ├── Models
+│   │   ├── KNN
+│   │   │   ├── diamond_model.pkl
+│   │   │   └── diamond_scaler.pkl
+│   │   └── Numpy
+│   │       └── model_checkpoint.npz
+│   └── Processed_Datasets
+│       ├── customer_survey_dataset.parquet
+│       ├── reg_sales_dset_parquet.parquet
+│       ├── reg_sales_dset_pickle.pkl
+│       └── subscription_logs_dataset.parquet
+├── Scikit-Learn
+│   ├── Gemini_Code.py
+│   ├── script_1.py
+│   ├── script_2.py
+│   └── things to Note.txt
+├── SQL_and_pandas
+│   ├── database_generator
+│   │   ├── build_database.py
+│   │   ├── file_a.py
+│   │   ├── __pycache__
+│   │   │   └── build_database.cpython-312.pyc
+│   │   └── run_database_build.py
+│   ├── Pandas_Code
+│   │   ├── Gemini_Code.py
+│   │   ├── postres_connect.py
+│   │   ├── script_1.py
+│   │   ├── script_2.py
+│   │   └── things to Note.txt
+│   └── SQL_Code_and_DataBase
+│       ├── Gemini_code.sql
+│       ├── learn_sql.ipynb
+│       ├── script_2.sql
+│       └── things to Note.txt
+├── test_things.py
+├── tree.txt
+└── z_code.ipynb
+
+32 directories, 113 files
+
+```
+
 ## Contents (high-level)
 
 - `General things to Note.txt` — Short notes and reminders about ML python development in general.
