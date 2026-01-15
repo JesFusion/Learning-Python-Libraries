@@ -7,6 +7,12 @@
 },
 
 {
+
+    chmod (Change Mode):
+    
+    This command changes who can do what to a file. We have two ways to speak to the bouncer:
+    
+    1. Numeric (Octal):
     chmod (Change Mode) Permissions numbers:
 
     - Read (r) = 4
@@ -14,8 +20,63 @@
     - Execute (x) = 1
     - No Permission = 0
 
+    You sum these up for each of the three groups: User (Owner), Group, and Others.
+
+    a. 755:
+
+    User: 4+2+1 = 7 (Read + Write + Execute). You can do anything.
+
+    Group: 4+0+1 = 5 (Read + Execute). Colleagues can run your script but not break it.
+
+    Others: 4+0+1 = 5 (Read + Execute). The public can run it but not break it.
+    
+    ==> chmod 755 {filename}
+
+    b. 600:
+
+    User: 4+2 = 6 (Read + Write).
+
+    Group/Others: 0. This is for SSH keys or secrets (.env files). No one else can even look at them.
+
+    ==> chmod 600 {filename}
+
+
+
+
+    2. Symbolic:
+    - People:
+    u = user
+    g = group
+    o = others
+
+    - Abilities
+    r = read
+    w = write
+    x = execute
+
+
+    Examples:
+    how to give only user permission to execute:
+    ==> chmod u+x {filename}
+    
+    remove user's ability to execute:
+    ==> chmod u-x {filename}
+
+    give group ability to write:
+    ==> chmod g+w {filename}
+
+    revoke ability to read from others:
+    ==> chmod o-r {filename}
+
+    give everyone ability to read:
+    ==> chmod +r {filename}
+    
+    give everyone ability to execute:
+    ==> chmod +x {filename}
 },
 
 {
+    chown (Change Ownership):
+    
     chown jesfusion:devs file.yaml --> "jesfusion owns this yaml file, and it belongs to the 'devs' team."
 }
