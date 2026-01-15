@@ -674,3 +674,440 @@ echo -e "\nSegment 2 Lab Complete."
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#!/bin/bash
+
+# ==========================================
+# MODULE 2.1: DOCKERFILE BASICS & CONTEXT
+# ==========================================
+# This script generates a 'bad' build context (with junk files)
+# and then fixes it using .dockerignore.
+
+APP_DIR="lab_2_1"
+IMAGE_NAME="jesse-basics:v1"
+
+# 1. SETUP: Create a project directory
+rm -rf $APP_DIR # Clean up previous runs
+mkdir $APP_DIR
+cd $APP_DIR
+
+# 2. CREATE ASSETS: A Python script and some "Junk"
+echo "print('Hello from the Container Layer!')" > main.py
+
+# Simulate a massive file that we DO NOT want in the container (e.g., a local model or git history)
+# 'dd' is a Linux command to copy data. Here we create a 10MB dummy file.
+# WHY? To prove that 'docker build' sends this to the daemon if we don't ignore it.
+dd if=/dev/zero of=huge_model_file.bin bs=1M count=10 2>/dev/null
+echo "Created a 10MB junk file to simulate a heavy local artifact."
+
+# 3. CREATE THE DOCKERFILE
+# We use 'cat <<EOF' to write the file dynamically.
+cat <<EOF > Dockerfile
+# --- LAYER 1: The Foundation ---
+# FROM: Defines the base OS and Python version.
+# We use 3.9-slim because it is smaller than 'latest' but compatible with Debian (unlike Alpine).
+FROM python:3.9-slim
+
+# --- LAYER 2: The Setup ---
+# WORKDIR: The Linux 'cd'.
+# WHY /app? In Linux, root (/) is messy. We create a dedicated folder for our code.
+# If we didn't do this, files would land in the root directory.
+WORKDIR /app
+
+# --- LAYER 3: The Code ---
+# COPY: Moves files from Host (Context) to Container.
+# Syntax: COPY <source_on_laptop> <dest_in_container>
+# '.' means "Current Directory".
+COPY . .
+
+# --- LAYER 4: The Execution ---
+# CMD: The default command when 'docker run' is called.
+# It is a list of strings ["executable", "argument"].
+CMD ["python", "main.py"]
+EOF
+
+# 4. CREATE .dockerignore
+# Without this, Docker would copy the 10MB 'huge_model_file.bin' into the container.
+cat <<EOF > .dockerignore
+# .dockerignore works exactly like .gitignore
+# It tells the Docker CLI: "Do not send these files to the Daemon."
+huge_model_file.bin
+.git
+venv
+EOF
+
+# 5. BUILD PROCESS
+echo "--- [BUILD] Building the Image ---"
+# docker build: Compiles the Dockerfile into an Image.
+# -t: Tags the image with a name.
+# .: The Context. It tells Docker "Look for files in the current directory".
+docker build -t $IMAGE_NAME .
+
+# 6. VERIFICATION
+echo "--- [VERIFY] Checking Image Size ---"
+# We check if the image size includes the 10MB junk file.
+# If .dockerignore worked, the size should be small (Base ~120MB + Code).
+docker images $IMAGE_NAME
+
+echo "--- [RUN] Testing the Artifact ---"
+docker run --rm $IMAGE_NAME
+
+# Cleanup
+cd ..
+# rm -rf $APP_DIR # Uncomment to clean up files after run
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#!/bin/bash
+
+# ==========================================
+# MODULE 2.2: RUNTIME LOGIC & ENTRYPOINT (DEEP DIVE)
+# =======================================
+# OBJECTIVE:
+# We are building a "Smart Container".
+# Instead of a container that does the exact same thing every time,
+# we want a container that changes its behavior based on what we tell it
+# right when we start it (Runtime).
+
+APP_DIR="lab_2_2"
+IMAGE_NAME="jesse-runtime:v1"
+
+# ANNOTATION:
+# mkdir: Make Directory.
+# -p: "Parents". If lab_2_2 already exists, don't crash. Just move on. If it doesn't, create it
+# cd: Change Directory. We go inside to keep our mess contained.
+mkdir -p $APP_DIR
+cd $APP_DIR
+
+# ---------------------------------------------------------
+# STEP 1: THE PYTHON LOGIC ( The Brain )
+# ---------------------------------------------------------
+# This script is the "Brain" of our container.
+# It needs to know how to listen to the outside world.
+
+cat <<EOF > greeter.py
+import sys
+import os
+
+# ---------------------------------------------------------
+# LISTENING TO ENVIRONMENT VARIABLES
+# ---------------------------------------------------------
+# Imagine a "Sticky Note" slapped on the container's forehead.
+# The code reads the note.
+# os.environ: Accesses the Linux environment variables.
+# .get('USER_NAME', 'Stranger'):
+#    - Look for a variable named 'USER_NAME'.
+#    - If it exists, use it.
+#    - If it DOES NOT exist, use the fallback value 'Stranger'.
+user_name = os.environ.get('USER_NAME', 'Stranger')
+
+# ---------------------------------------------------------
+# LISTENING TO COMMAND ARGUMENTS
+# ---------------------------------------------------------
+# Imagine someone shouting a command at the container.
+# sys.argv is a list of words typed in the terminal command.
+# sys.argv[0] = "greeter.py" (The script name itself)
+# sys.argv[1] = The first word AFTER the script name.
+try:
+    # Try to grab the first word after "greeter.py"
+    mode = sys.argv[1]
+except IndexError:
+    # If no one shouted anything (the list is too short), use "Standard".
+    mode = "Standard"
+
+print(f"Hello, {user_name}! Running in {mode} mode.")
+EOF
+
+# ---------------------------------------------------------
+# STEP 2: THE DOCKERFILE ( The Blueprint )
+# ---------------------------------------------------------
+# This defines how we bake the Brain (Python) into the Box (Container).
+
+cat <<EOF > Dockerfile
+FROM python:3.9-slim
+
+# WORKDIR: Sets the stage. Any command after this happens inside /app.
+WORKDIR /app
+
+# ---------------------------------------------------------
+# CONFIGURING THE DEFAULT ENVIRONMENT
+# ---------------------------------------------------------
+# ENV: This is like a "Factory Setting".
+# When we build this image, we are hard-coding "DefaultUser" into the Linux OS.
+# The Python script (os.environ.get) will see this value unless we change it later.
+ENV USER_NAME="DefaultUser"
+
+# COPY: Taking our script from your laptop and putting it into the image.
+COPY greeter.py .
+
+# ---------------------------------------------------------
+# THE ENTRYPOINT / CMD COMBO (The most confusing part)
+# ---------------------------------------------------------
+# Think of it like a sentence: "Subject + Verb + Object"
+# ENTRYPOINT is the Subject + Verb. It DOES NOT CHANGE.
+# CMD is the Object. It is the DEFAULT, but it CAN CHANGE.
+
+# ENTRYPOINT ["python", "greeter.py"]
+# Translation: "No matter what, when this container starts, run Python on this script."
+ENTRYPOINT ["python", "greeter.py"]
+
+# CMD ["DefaultMode"]
+# Translation: "If the user says nothing else, append the word 'DefaultMode' to the command."
+# Resulting Command: "python greeter.py DefaultMode"
+CMD ["DefaultMode"]
+EOF
+
+# ---------------------------------------------------------
+# STEP 3: BUILD THE IMAGE
+# ---------------------------------------------------------
+echo "--- [BUILD] Compiling Image ---"
+# docker build: Read the Dockerfile, execute the steps, save the result.
+# -t: Give it a nametag ($IMAGE_NAME) so we can find it later.
+# .: Use files in the current directory.
+docker build -t $IMAGE_NAME .
+
+# ---------------------------------------------------------
+# SCENARIO A: THE LAZY RUN
+# ---------------------------------------------------------
+echo "--- [TEST A] Running with Defaults ---"
+# We type: docker run jesse-runtime:v1
+# Docker sees:
+#   1. ENTRYPOINT: "python greeter.py"
+#   2. CMD (from Dockerfile): "DefaultMode"
+#   3. ENV (from Dockerfile): USER_NAME="DefaultUser"
+#
+# Final Execution inside Linux:
+#   USER_NAME="DefaultUser" python greeter.py DefaultMode
+#
+# Python sees:
+#   os.environ['USER_NAME'] -> "DefaultUser"
+#   sys.argv[1] -> "DefaultMode"
+docker run --rm $IMAGE_NAME
+
+# ---------------------------------------------------------
+# SCENARIO B: OVERRIDING THE ARGUMENT (CMD)
+# ---------------------------------------------------------
+echo "--- [TEST B] Overriding CMD (The Argument) ---"
+# We type: docker run jesse-runtime:v1 Production
+# Docker sees:
+#   1. ENTRYPOINT: "python greeter.py"
+#   2. USER INPUT: "Production" (This DELETES and REPLACES "DefaultMode")
+#
+# Final Execution inside Linux:
+#   USER_NAME="DefaultUser" python greeter.py Production
+#
+# Python sees:
+#   os.environ['USER_NAME'] -> "DefaultUser" (Still the factory setting)
+#   sys.argv[1] -> "Production" (The new word we typed)
+docker run --rm $IMAGE_NAME Production
+
+# ---------------------------------------------------------
+# SCENARIO C: OVERRIDING THE VARIABLE (ENV)
+# ---------------------------------------------------------
+echo "--- [TEST C] Overriding ENV (The Variable) ---"
+# We type: docker run -e USER_NAME="Jesse" jesse-runtime:v1
+# Docker sees:
+#   1. ENTRYPOINT: "python greeter.py"
+#   2. CMD (from Dockerfile): "DefaultMode" (We didn't change this part)
+#   3. -e FLAG: USER_NAME="Jesse" (This OVERRIDES the Dockerfile ENV)
+#
+# Final Execution inside Linux:
+#   USER_NAME="Jesse" python greeter.py DefaultMode
+#
+# Python sees:
+#   os.environ['USER_NAME'] -> "Jesse" (The new sticky note)
+#   sys.argv[1] -> "DefaultMode" (The default argument)
+docker run --rm -e USER_NAME="Jesse" $IMAGE_NAME
+
+# Cleanup: go back to the previous folder
+cd ..
+
+
+
+
+
