@@ -48,4 +48,21 @@
 
     - Start:
     sudo systemctl start postgresql
+},
+
+{
+    The Goal of Normalization
+    The goal is "One Fact, One Place." If you change a user's email address, you should only have to update one row in your entire database. If you have to update 50 rows, your database is "Un-Normalized" and you are going to have bugs.
+
+    1. First Normal Form (1NF): The "Atomic" Rule
+    Rule: No lists in a single cell. One value per cell.
+
+    2. Second Normal Form (2NF): The "Whole Key" Rule
+    Rule: Every column must depend on the Entire Primary Key, not just part of it. Note: This only applies if you have a "Composite Key" (an ID made of two columns combined).
+
+    3. Third Normal Form (3NF): The "No Chain Reaction" Rule
+    Rule: Columns shouldn't depend on other non-key columns. (Transitive Dependency).
 }
+
+
+
