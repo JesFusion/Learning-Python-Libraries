@@ -5,18 +5,8 @@ This Repo is a personal collection of small learning projects, reference notes, 
 ## Repo Structure
 ```
 .
-├── assignment.txt
 ├── build.sh
 ├── Docker
-│   ├── Docker_Folders
-│   │   ├── fol_2_1
-│   │   │   ├── build.sh
-│   │   │   ├── Dockerfile
-│   │   │   └── script.py
-│   │   └── fol_2_2
-│   │       ├── build.sh
-│   │       ├── Dockerfile
-│   │       └── greet_script.py
 │   ├── docker_init.sh
 │   ├── Gemini_Code.txt
 │   ├── script_1.sh
@@ -37,9 +27,6 @@ This Repo is a personal collection of small learning projects, reference notes, 
 ├── FastAPI
 │   ├── Gemini_Code.py
 │   ├── main.py
-│   ├── __pycache__
-│   │   ├── main.cpython-312.pyc
-│   │   └── the_client.cpython-312.pyc
 │   ├── script_2.py
 │   ├── the_client.py
 │   └── things to Note.txt
@@ -111,7 +98,6 @@ This Repo is a personal collection of small learning projects, reference notes, 
 ├── README.md
 ├── requirements.txt
 ├── Saved_Datasets_and_Models
-│   ├── Datasets
 │   ├── Models
 │   │   ├── KNN
 │   │   │   ├── diamond_model.pkl
@@ -132,8 +118,6 @@ This Repo is a personal collection of small learning projects, reference notes, 
 │   ├── database_generator
 │   │   ├── build_database.py
 │   │   ├── file_a.py
-│   │   ├── __pycache__
-│   │   │   └── build_database.cpython-312.pyc
 │   │   └── run_database_build.py
 │   ├── Pandas_Code
 │   │   ├── Gemini_Code.py
@@ -147,11 +131,7 @@ This Repo is a personal collection of small learning projects, reference notes, 
 │       ├── script_2.sql
 │       └── things to Note.txt
 ├── test_things.py
-├── tree.txt
 └── z_code.ipynb
-
-32 directories, 113 files
-
 ```
 
 ## Contents (high-level)
@@ -229,6 +209,6 @@ This folder appears to be personal learning material. If you want to publish or 
 
 ---
 
-This README was last edited on 2025-11-17
+This README was last edited on 2026-01-15
 
 <!-- TODO: Proof-Read this Markdown content-->
