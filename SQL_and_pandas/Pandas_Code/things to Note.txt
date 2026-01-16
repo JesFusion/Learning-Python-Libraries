@@ -54,5 +54,21 @@
 
     3. `.astype(float)`  
     Converts the cleaned string values into actual floating-point numbers.
+},
+
+{
+    tablefmt is a parameter in .to_markdown() that enables you to customize table styles. various options are:
+
+    1. GitHub Flavored Markdown (Default-like)
+    ==> .to_markdown(tablefmt="github")
+
+    2. Grid style with visible borders
+    ==> df.to_markdown(tablefmt="grid")
+
+    3. "Fancy" grid with Unicode box-drawing characters
+    ==> .to_markdown(tablefmt="fancy_grid")
+
+    4. Simple pipe format
+    ==> .to_markdown(tablefmt="pipe")
 }
 
