@@ -6,11 +6,14 @@ import joblib
 import logging
 import requests
 import numpy as np
-from enum import Enum
+import pandas as pd
+from enum import Enum # Enum is a class that enables us to create a restricted list of choices for a dynamic route
 from pydantic import BaseModel, Field, model_validator
 from fastapi import FastAPI, Depends, HTTPException, Header, Body
-from typing import List, Optional, Annotated
+from typing import List, Optional, Annotated # for creating optional parameters
 from dotenv import load_dotenv
+from sqlalchemy import create_engine, text # text is a safer method to write queries for a database than mere strings
+
 
 
 app = FastAPI()
@@ -1210,6 +1213,504 @@ async def jesse_page():
     }
 
     return JP_output
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# create an instance of the FastAPI class
+the_api = FastAPI()
+
+# define a route decorator for the home page using the GET method.
+# Any HTTP GET request to the home page should run the function below
+@the_api.get("/")
+
+async def root_page():
+
+    # return a JSON (standard for API and web communication)
+    return {
+        "message": "FastAPI is cool!",
+
+        "scale": 7
+    }
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+the_data = {
+    "model_name": ["resnet", "yolo", "transformer", "pytorch"],
+    "version": ["v1", "v5", "v2", "v0.1"],
+    "accuracy": [0.92, 0.88, 0.95, 0.11]
+}
+
+dataset = pd.DataFrame(the_data)
+
+# visualizing the dataset...
+# print(dataset.head().to_markdown(tablefmt = "fancy_grid"))
+
+
+# ===================================== API LOGIC =====================================
+
+
+
+the_app = FastAPI()
+class Models(str, Enum): # we define a class which is a subclass of the string and Enum classes, where we define the allowed model names
+
+    r = "resnet"
+
+    y = "yolo"
+
+    tf = "transformer"
+
+    torch = "pytorch"
+
+
+
+"""
+SPECIFIC PATH
+
+A static route for the "latest" model must come BEFORE the generic path.
+
+If this route was below the /{MODEL} route, FastAPI would think "latest" is a variable name.
+"""
+@the_app.get("/the_models/latest")
+
+async def latest_model():
+
+    return {
+        "name": "most powerful model",
+
+        "status": "insanely capable"
+    }
+
+
+"""
+DYNAMIC ROUTING WITH TYPE HINTING:
+
+MODEL is a path parameter that we type hint as our 'Models' Enum
+
+The Models class acts as a bouncer for incoming string, ensuring that they must match one of the specified values
+"""
+
+@the_app.post("/models/{MODEL}")
+async def model_info(MODEL: Models):
+
+    user_choice = dataset.loc[dataset['model_name'] == MODEL]
+
+    user_choice = user_choice.to_dict(orient = 'records')[0]
+
+    return {
+        "model_name": user_choice["model_name"],
+
+        "version": user_choice["version"],
+
+        "accuracy": user_choice["accuracy"]
+    }
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+connection = os.environ.get("POSTGRE_CONNECT")
+
+website = FastAPI()
+
+conn = create_engine(connection)
+
+
+
+
+@website.get("/m_acc_logs_10")
+
+async def model_prediction(
+
+    # required parameter. No default value provided.
+    model_name: str,
+
+    # also a required parameter
+    ID: int = 9,
+
+    # optional parameter. default is 0.445
+    model_threshold: float = 0.445,
+
+    # model_tag can either be an inputed string or None by default
+    model_tag: Optional[str] = None
+    # the code above is the same thing as:
+    # model_tag: str | None
+):
+    model_logs_query = text("""
+SELECT model_acc FROM lab_models
+WHERE data_name = :model
+AND model_acc > :accuracy_score
+LIMIT 10
+""")
+
+    output = pd.read_sql_query(
+        model_logs_query,
+
+        con = conn,
+
+        # "params" is where we input nouyr Parameters; the values our database should use for when running the query
+        params = {
+            "model": model_name,
+
+            "accuracy_score": model_threshold
+        }
+
+    )["model_acc"].tolist() # this extracts only the 'model_acc' column and converts it to a list
+
+    
+    acc_report = {}
+
+    for acc_number in range(len(output)):
+
+        acc_report[f"Acc {acc_number + 1}"] = output[acc_number]
+
+
+    return {
+        "model name": model_name,
+
+        "ID": ID,
+
+        "model tag": model_tag,
+
+        "model logs": acc_report,
+    }
+
+
+
+
+
+
+@website.get("/all_acc_logs")
+
+async def fetch_all_logs(
+
+    model_name: str,
+
+    model_threshold: float,
+
+    skip_logs: int = 10,
+
+    fetch_limit: int = 50,
+):
+    
+    
+    all_acc_query = text("""
+SELECT model_acc FROM lab_models
+WHERE data_name = :model
+AND model_acc > :accuracy_score
+LIMIT :limit
+OFFSET :log_skip
+""")
+
+    # by default the database will always return rows of the specified limit
+    # we need to make sure that our dataframe never returns more then 10 rows if fetch_limit - skip_logs < 10
+    show_size = fetch_limit - skip_logs
+
+    # our dataframe should not return more than 10 rows if the difference between the inputed number of logs to skip and the limit of logs to extract is less than 10
+    if show_size < 10:
+
+        dict_limit = show_size
+    else:
+
+        dict_limit = 10
+
+
+
+    all_output = pd.read_sql_query(
+        con = conn,
+
+        sql = all_acc_query,
+
+        params = {
+            "model": model_name,
+            
+            "accuracy_score": model_threshold,
+
+            "log_skip": skip_logs,
+
+            "limit": fetch_limit,
+        }
+    ).head(dict_limit)["model_acc"].tolist()
+
+
+    acc_tag = []
+
+    for log_row_number in range(skip_logs, (skip_logs + dict_limit)): # this gives us a range of numbers between the number inputed but the user for the OFFSET, and it's addition to the value of 'dict_limit'
+
+        acc_tag.append(f"Acc {log_row_number + 1}")
+        
+
+    acc_report = dict(zip(acc_tag, all_output))
+
+    return {
+        "model name": model_name,
+
+        "model logs": acc_report
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
