@@ -10,4 +10,14 @@
     Any changes you make inside the container—like creating a new text file—are saved in this temporary layer.
     
     If you delete the container, that writable layer (and any files you created) disappears, but the original image remains untouched. 
+},
+
+{
+    In a Dockerfile we order commands from Least Likely to Change TO Most Likely to Change
+},
+
+{
+    We never just write a library (numpy), we must wlays include what version to use (numpy==2.2.6),to avoid our code breaking in the future due to updates from newest versions
+
+    Pinned versions guarantee that the code runs the same today as it will in 5 years
 }

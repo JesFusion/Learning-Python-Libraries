@@ -1111,3 +1111,242 @@ cd ..
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#!/bin/bash
+
+# ==========================================
+# MODULE 2.3: MANAGING DEPENDENCIES
+# ==========================================
+# Demonstrates the "Layer Caching" strategy to speed up builds.
+# We split the installation step from the code copy step.
+
+APP_DIR="lab_2_3"
+IMAGE_NAME="jesse-deps:v1"
+
+# ANNOTATION:
+# mkdir -p: Create the directory. The -p flag prevents errors if it already exists.
+# cd: Move context into that directory so all files are created there.
+mkdir -p $APP_DIR
+cd $APP_DIR
+
+# 1. REQUIREMENTS
+# We explicitly list versions to ensure "Immutable Infrastructure".
+# ANNOTATION:
+# Pinned Versions (==): In MLOps, NEVER just say "pandas". Always say "pandas==2.0.3".
+# Why? Because if pandas updates tomorrow and breaks your code, your production app crashes.
+# Pinned versions guarantee that the code runs the same today as it will in 5 years.
+cat <<EOF > requirements.txt
+pandas==2.0.3
+numpy==1.24.3
+EOF
+
+# 2. THE CODE
+# A dummy script that imports pandas to prove installation worked.
+cat <<EOF > analytics.py
+import pandas as pd
+import numpy as np
+
+df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+print("Pandas Version:", pd.__version__)
+print("DataFrame Shape:", df.shape)
+EOF
+
+# 3. THE OPTIMIZED DOCKERFILE
+cat <<EOF > Dockerfile
+# --- BASE IMAGE SELECTION ---
+# We use 'slim', NOT 'alpine'.
+# WHY? MLOps libraries (pandas, numpy) require C extensions.
+# Alpine uses 'musl' C library, standard Linux uses 'glibc'.
+# Installing pandas on Alpine triggers a long compilation from source.
+# 'slim' is Debian-based and supports pre-compiled wheels (fast install).
+# ANNOTATION:
+# "python:3.9-slim": This is a stripped-down version of Debian Linux.
+# It is much smaller than the full image, but unlike Alpine, it is binary-compatible
+# with standard data science wheels.
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# --- OPTIMIZATION: CACHING LAYERS ---
+# STEP 1: Copy ONLY requirements.txt
+# WHY? If we copied everything (COPY . .), changing 'analytics.py' would invalidate the cache
+# for this layer, forcing Docker to reinstall pandas every time we change a print statement.
+
+# ANNOTATION:
+# This is the Magic Trick.
+# Docker builds in layers. It checks: "Has the file 'requirements.txt' changed since the last build?"
+# If NO -> It reuses the cached result of this step.
+# If YES -> It runs this step and EVERY step after it again.
+COPY requirements.txt .
+
+# STEP 2: Install Dependencies
+# This layer is now cached based ONLY on the checksum of requirements.txt.
+# As long as requirements.txt doesn't change, Docker skips this step on rebuilds.
+
+# ANNOTATION:
+# --no-cache-dir: Tells pip "Don't save the downloaded .whl files to disk."
+# We do this to keep the Docker image size small. We don't need the installers after installation.
+RUN pip install --no-cache-dir -r requirements.txt
+
+# STEP 3: Copy the rest of the code
+# This is the "volatile" layer that changes frequently.
+# ANNOTATION:
+# Now we copy 'analytics.py'.
+# Since we do this AFTER the 'RUN pip install', we can change our python code all day long,
+# and Docker will NOT re-run the pip install step. It just re-runs this COPY step.
+COPY . .
+
+CMD ["python", "analytics.py"]
+EOF
+
+# 4. FIRST BUILD (Slow)
+echo "--- [BUILD 1] First Build (Installing Pandas...) ---"
+# This will take time because it downloads pandas.
+# ANNOTATION:
+# time: A bash utility that measures how long a command takes to run.
+# You will see 'Real', 'User', and 'Sys' time printed after the build finishes.
+time docker build -t $IMAGE_NAME .
+
+# 5. SIMULATE CODE CHANGE
+echo "--- [DEV] Changing Code (But not requirements) ---"
+# ANNOTATION:
+# >> : Append operator. Adds the line to the end of the file.
+# We are modifying the source code to prove that Docker notices the change.
+echo "print('Code Updated!')" >> analytics.py
+
+# 6. SECOND BUILD (Fast)
+echo "--- [BUILD 2] Second Build (Using Cache) ---"
+# Watch the output! It should say "Using cache" for the pip install step.
+# It should be almost instant.
+# ANNOTATION:
+# When you run this, watch the terminal output closely.
+# You will see: "CACHED [2/4] COPY requirements.txt ."
+# You will see: "CACHED [3/4] RUN pip install ..."
+# It skips the heavy lifting!
+time docker build -t $IMAGE_NAME .
+
+# 7. RUN
+echo "--- [RUN] verifying installation ---"
+docker run --rm $IMAGE_NAME
+
+cd ..
+
+
+
+
+
+
+
