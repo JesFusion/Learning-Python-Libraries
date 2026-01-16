@@ -12,7 +12,7 @@ mkdir $folder_name
 cd $folder_name
 
 touch Dockerfile
-touch .dockerignore
+touch file.py
 touch build.sh
 
 echo "Done creating folder '$folder_name' with files"
