@@ -244,3 +244,89 @@ WHERE model_loss IS NOT NULL;
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DROP TABLE IF EXISTS datasets_table CASCADE;
+
+-- creating a table to store unique dataset names
+CREATE TABLE datasets_table (
+	id SERIAL PRIMARY KEY,
+	
+	name_of_dataset VARCHAR(55) UNIQUE NOT NULL
+);
+
+-- we extract unique names from raw_training_logs
+INSERT INTO datasets_table (name_of_dataset)
+SELECT DISTINCT dataset_name
+FROM raw_training_logs
+WHERE dataset_name IS NOT NULL;
+
+
+SELECT * FROM datasets_table; -- should consist of just 4 unique dataset names under the 'name_of_dataset' column
+
+
+-- CREATING THE LINKED TABLE (FOREIGN KEYS)
+DROP TABLE IF EXISTS normalized_experiments;
+
+CREATE TABLE normalized_experiments (
+	id SERIAL PRIMARY KEY,
+	m_name VARCHAR(112),
+	model_accuracy REAL,
+	ID_of_dataset INT REFERENCES datasets_table(id) -- this is the foreign key. It replaces the string "ImageNet" with an Integer ID	
+);
+
+
+-- THE JOIN INSERT
+-- This is how we convert string data to ID references on the fly.
+
+INSERT INTO normalized_experiments (m_name, model_accuracy, id_of_dataset)
+SELECT rtl.experiment_name,
+	rtl.model_accuracy,
+	dt.id -- extracting the ID from datasets_table
+FROM raw_training_logs rtl
+JOIN datasets_table dt ON rtl.dataset_name = dt.name_of_dataset -- string name should be matched
+WHERE rtl.experiment_name  IS NOT NULL;
+
+-- The new table uses integers for datasets, saving space.
+SELECT * FROM normalized_experiments LIMIT 23;
+
+
+
+
+
+
+
+
