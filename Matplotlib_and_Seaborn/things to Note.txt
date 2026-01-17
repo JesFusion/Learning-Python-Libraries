@@ -22,4 +22,37 @@
     - sns.displot
     - sns.lmplot()
     - sns.pairplot()
+},
+
+{
+    To test for normality, we use stats.probplot(). Most important parameters are:
+
+
+    i. x:
+    
+    An array-like object containing the sample or response data to be plotted.
+    
+    ii. dist:
+    
+    A string (e.g., 'norm', 't', 'expon') or a distribution instance. This specifies the theoretical distribution to compare against. The default is 'norm' (standard normal).    
+    
+    iii. plot:
+    
+    An optional object used for plotting (typically matplotlib.pyplot or a specific Axes object). If provided, it will generate the visual plot including the data quantiles and, if fit=True, the best-fit line.
+
+
+    Other parameters are:
+
+    iv. sparams:
+    
+    A tuple of distribution-specific shape, location, and scale parameters. These are passed to the theoretical distribution specified in the dist argument.
+    
+    
+    v. rvalue:
+    
+    A boolean (default False). If set to True and a plot is provided with fit=True, the coefficient of determination (\(R^{2}\)) is included on the plot.
+
+    vi. fit:
+    
+    A boolean (default True). If True, the function calculates a least-squares regression best-fit line for the data.
 }

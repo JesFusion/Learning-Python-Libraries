@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 matplotlib.use('TkAgg')
+from scipy import stats
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
 from sqlalchemy import create_engine
@@ -1761,6 +1762,322 @@ joint_axes.fig.suptitle(
 
 
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def extract_and_save():
+
+    dataset = pd.read_sql_query(
+        sql = "SELECT * FROM diamonds_sales",
+
+        con = os.environ.get("POSTGRE_CONNECT")
+    )
+
+    dataset.to_parquet(path = "Saved_Datasets_and_Models/Datasets/diamonds.parquet", index = False)
+
+    print("Done saving dataset as parquet file in Datasets folder")
+
+
+if False:
+    extract_and_save()
+
+
+# ===================================== Extracting the Dataset =====================================
+
+diamonds_dataset = pd.read_parquet("Saved_Datasets_and_Models/Datasets/diamonds.parquet")
+
+# print(diamonds_dataset.head().to_markdown(tablefmt = "grid"))
+
+sns.set_theme(
+    style = 'whitegrid',
+    context = 'notebook'
+)
+
+
+figure, axes = plt.subplots(
+    nrows = 2, ncols = 2,
+    figsize = (16, 11),
+    constrained_layout = True
+)
+
+
+figure.suptitle("Feature Engineering: Transforming Skewed Data", fontsize = 16)
+
+# ===================================== Diagnozing the skew =====================================
+
+"""
+.skew() is used to calculate the skewness of a feature
+
+.kurt() is used to calculate the kurtosis of a feature
+"""
+p_skew = diamonds_dataset["price"].skew()
+
+p_kurtosis = diamonds_dataset['price'].kurt()
+
+
+# visualizing the 'price' column...
+sns.histplot(
+    data = diamonds_dataset,
+    bins = 'auto',
+    x = 'price',
+    kde = True,
+    color = "#DF4001",
+    ax = axes[0, 0]
+)
+
+# we insert an annotation box to show the statistics...
+
+text_0_0 = f"""Skew: {p_skew:.2f} (Right)
+Kurtosis: {p_kurtosis:.2f} (High)"""
+
+
+
+
+
+"""
+The .text() function adds a text label to a specific location on a plot. Here, we used it to create a formatted annotation box relative to the subplot's dimensions.
+
+
+1. x & y are the coordinates where the text starts. Because of the transform parameter, these are not data values (like 'price'); instead, they represent percentages of the plot area.
+
+
+2. s is the string content to display
+
+
+3. transform tells Matplotlib how to translate the (x,y) numbers into actual pixel positions on the screen or image.
+
+transform = axes.transAxes: This is a critical setting. It tells Matplotlib to use the Axes coordinate system (0 to 1) instead of the data coordinate system.
+
+Benefit: If your data range changes (e.g., from 0–100 to 0–1000), the text will stay in the same visual spot relative to the box rather than moving with the data.
+
+
+4. bbox = dict(...): This creates a Bounding Box (background box) around the text.
+
+facecolor sets the background color of the box
+
+alpha sets the transparency of the box (0 is invisible, 1 is opaque). 
+"""
+
+
+
+axes[0, 0].text(
+    x = 0.62, y = 0.8,
+    s = text_0_0, transform = axes[0, 0].transAxes, # Coordinates relative to the axes (0-1), not data values
+    bbox = dict(facecolor = "#B3AFAF", alpha = 0.7)
+)
+
+axes[0, 0].set_title("Original Price Distribution (Right Skewed)")
+
+
+# ===================================== Performing Log Transformation =====================================
+
+# log transformation squishes values, large values more than small ones. It's a good way to overcome right skewness as it draws the long tail in
+
+diamonds_dataset['log_of_price'] = np.log1p(diamonds_dataset['price']) # log1p [log(1 + x)] is better than normal log as it is flexible at log(0), which would return an error (negative infinity) if you use normal log
+
+p_log_skew = diamonds_dataset['log_of_price'].skew()
+
+
+sns.histplot(
+    data = diamonds_dataset,
+    bins = 'auto',
+    x = 'log_of_price',
+    kde = True,
+    color = "#9C41A8",
+    ax = axes[0, 1]
+)
+
+text_0_1 = f"Skew: {p_log_skew:.2f} (Normal-ish)"
+
+axes[0, 1].text(
+    x = 0.75, y = 0.9,
+    s = text_0_1,
+    
+    transform = axes[0, 1].transAxes,
+    
+    bbox = dict(facecolor = "#B3AFAF", alpha = 0.8)
+)
+
+axes[0, 1].set_title("Log Transformed price (Closer to Normal)")
+
+
+
+# ===================================== Box-Cox Transformation (The power Tool) =====================================
+
+"""
+Box-Cox optimizes the power parameter (lambda) to make data as normal as possible
+
+Data must be strictly positive (> 0)
+
+Of course price is always greater than 0!
+"""
+
+
+diamonds_dataset["boxcox_of_price"], calc_lambda = stats.boxcox(diamonds_dataset["price"]) # stats.boxcox returns the transformed data and the lambda used
+
+
+p_boxcox_skew = diamonds_dataset['boxcox_of_price'].skew()
+
+
+sns.histplot(
+    data = diamonds_dataset,
+    bins = 'auto',
+    x = 'boxcox_of_price',
+    kde = True,
+    color = "#F30B45",
+    ax = axes[1, 0]
+)
+
+text_1_0 = f"Skew: {p_boxcox_skew:.2f}"
+
+axes[1, 0].text(
+    x = 0, y = 0.8,
+    s = text_1_0,
+    transform = axes[1, 0].transAxes,
+    bbox = dict(facecolor = '#B3AFAF', alpha = 0.7)
+)
+
+
+axes[1, 0].set_title(f"Box-Cox Transformed (Lambda = {calc_lambda:.2f})")
+
+
+
+
+"""
+HOW DO WE TEST FOR NORMALITY?
+
+BY USING THE PROBABILITY PLOT
+"""
+
+# ===================================== Probability Plot (QQ Plot) =====================================
+
+# This is the ultimate test for normality.
+# If dots fall on the red line, the data is normal
+
+stats.probplot(
+    x = diamonds_dataset['log_of_price'],
+
+    dist = 'norm',
+
+    plot = axes[1, 1]
+)
+
+axes[1, 1].set_title('QQ Plot (Log Transformed Data)')
+
+plt.show()
+
+
+
+
+
 
 
 
