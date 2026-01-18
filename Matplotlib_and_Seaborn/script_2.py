@@ -2291,3 +2291,391 @@ plt.show()
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+figure_title = "Matplotlib/Seaborn Assignment"
+
+
+# ===================================== TASK 1 =====================================
+
+class ETL:
+
+    engine = create_engine(os.environ.get("POSTGRE_CONNECT"))
+
+    def ingest_data(self, table_name: str):
+
+        df = sns.load_dataset('taxis')
+
+        df.to_sql(
+            name = table_name,
+            if_exists = 'replace',
+            con = ETL.engine,
+            index = False
+        )
+
+        print(f"Data successfully uploaded to PostgreSQL database as '{table_name}'")
+
+    def extract_data(self, table_name: str) -> pd.DataFrame:
+
+        raw_data = pd.read_sql_query(
+            sql = f"SELECT * FROM {table_name}",
+
+            con = ETL.engine
+        )
+
+        return raw_data
+
+
+
+nyc = ETL()
+
+t_name = 'nyc_taxis'
+
+if False: # we run this only once, then change it from True to False
+
+    nyc.ingest_data(table_name = t_name)
+
+
+# extracting the dataset...
+if True:
+
+    nyc_dataset = nyc.extract_data(table_name = t_name)
+
+
+# ===================================== TASK 2 =====================================
+
+
+sns.set_context(context = 'poster')
+
+sns.set_theme(style = 'darkgrid')
+
+# i need to visualize the things I need to see so i'll use my own custom rows and columns
+figure, axes = plt.subplots(nrows = 2, ncols = 3, figsize = (15, 8), constrained_layout = True)
+
+
+
+# ===================================== TASK 3 =====================================
+
+
+# Plotting Histograms...
+
+sns.histplot(
+    data = nyc_dataset,
+    x = 'fare',
+    bins = 5, # using 5 bins is bad because it smooths out fluctuations in the data
+    color = "#F72C47",
+    edgecolor = "#CC0A13",
+    ax = axes[0, 0]
+)
+
+axes[0, 0].set_title("Histogram with 5 bars")
+
+
+sns.histplot(
+    data = nyc_dataset,
+    bins = 45, # using 45 bins is bad because it's too sensitive, and responds to the slightest fluctuation
+    x = 'fare',
+    color = "#096F97",
+    edgecolor = "#1438AD",
+    ax = axes[1, 0]
+)
+
+sns.rugplot(
+    data = nyc_dataset,
+    x = 'fare',
+    height = 0.08,
+    color = "#252525",
+    alpha = 0.1,
+    ax = axes[1, 0]
+)
+
+"""
+Analysis showed that people frequently pay between $1 - $20 in fares
+
+Something else seemed surprising: I also noticed that people also are more likely to pay ~$52 in fares, due to the clumping of rugplots there
+"""
+
+
+axes[1, 0].set_title("Histogram with 40 bars\n(with Rugplot for clarity)")
+
+
+
+
+
+
+
+# ===================================== TASK 4 =====================================
+
+
+distance_skew = nyc_dataset['distance'].skew()
+
+distance_kurtosis = nyc_dataset['distance'].kurt()
+
+
+# visualizing right skew...
+
+sns.kdeplot(
+    data = nyc_dataset,
+    bw_adjust = 1,
+    x = 'distance',
+    color = "#EC4C02",
+    fill = True,
+    ax = axes[0, 1]
+)
+
+axes[0, 1].set_title("Distance Column with Right-Skeweness")
+
+
+
+# performing log transformation to fix Right-Skeweness...
+
+nyc_dataset['distance_log_transformed'] = np.log1p(nyc_dataset['distance'])
+
+sns.kdeplot(
+    data = nyc_dataset,
+    bw_adjust = 1,
+    x = 'distance_log_transformed',
+    color = "#0958CF",
+    fill = True,
+    ax = axes[1, 1],
+)
+
+axes[1, 1].set_xlabel("Log Transformed Distance")
+
+axes[1, 1].set_title("Distance after applying\nLog Transformation")
+
+
+
+stats.probplot(
+    x = nyc_dataset['distance_log_transformed'],
+
+    dist = 'norm',
+
+    plot = axes[0, 2]
+)
+
+
+# changing the color of the lines...
+axes[0, 2].get_lines()[0].set_color("#475A4FB5")
+
+axes[0, 2].get_lines()[1].set_color("#7FFF00")
+axes[0, 2].get_lines()[1].set_linewidth(2) # changing linewidth
+
+
+axes[0, 2].set_title("Verifying if log transformed data follows\nNormnal distribution using probplot")
+
+
+
+# ===================================== TASK 5 =====================================
+
+sns.countplot(
+    data = nyc_dataset,
+    x = 'payment', hue = 'payment',
+
+    order = nyc_dataset['payment'].value_counts().index, # we refuse to let Seaborn order bars alphabetically.
+    #  We give Seaborn our own custom order, which was calculated by category count sizes
+
+    legend = False, palette = 'Spectral',
+    ax = axes[1, 2]
+)
+
+figure.suptitle(figure_title)
+
+figure.savefig(
+    "Matplotlib_and_Seaborn/images/figure1.svg",
+
+    format = 'svg',
+
+    bbox_inches = 'tight'
+)
+
+plt.close()
+
+
+# ===================================== TASK 6 =====================================
+
+
+figure2, axes2 = plt.subplots(
+    nrows = 2, ncols = 1, figsize = (15, 9),
+    constrained_layout = True
+)
+
+# noisy KDE
+sns.kdeplot(
+    data = nyc_dataset,
+    x =  'tip',
+    bw_adjust = 0.1,
+    color = "#09F198",
+    ax = axes2[0],
+    fill = True
+)
+
+# smooth KDE
+sns.kdeplot(
+    data = nyc_dataset,
+    x =  'tip',
+    bw_adjust = 2.0,
+    fill = True,
+    color = "#060C5C",
+    ax = axes2[0]
+)
+
+# Optimal KDE
+sns.kdeplot(
+    data = nyc_dataset,
+    x =  'tip',
+    fill = True,
+    bw_adjust = 1,
+    color = "#F12C09",
+    ax = axes2[1]
+)
+
+figure2.suptitle(figure_title)
+
+
+# saving figure2...
+figure2.savefig(
+    "Matplotlib_and_Seaborn/images/figure2.svg",
+
+    format = 'svg',
+
+    bbox_inches = 'tight'
+)
+
+
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
