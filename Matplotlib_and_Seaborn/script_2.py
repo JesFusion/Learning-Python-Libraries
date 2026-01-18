@@ -2083,3 +2083,211 @@ plt.show()
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+try:
+
+    diamonds_data = pd.read_sql(
+        sql = "SELECT * FROM diamonds_sales",
+
+        con = create_engine(os.environ.get("POSTGRE_CONNECT"))
+    )
+
+except Exception:
+
+    diamonds_data = pd.read_parquet("Saved_Datasets_and_Models/Datasets/diamonds.parquet")
+
+
+
+# we create a new column 'is_fraud?', splitting prices into Normal and Suspicious
+# if price > 18000 label as Fraud
+diamonds_data["is_fraud?"] = np.where(
+    diamonds_data['price'] > 18000, "Suspicious", "Normal"
+)
+
+sns.set_theme(
+    style = 'darkgrid',
+
+    context = 'talk'
+)
+
+
+figure, axes = plt.subplots(ncols = 2, nrows = 1,
+    figsize = (17, 7),
+    
+    # constrained_layout = True
+)
+
+
+
+# ===================================== VISUALIZING THE IMBALANCE (RARE CLASSES) =====================================
+
+"""
+A countplot is a Axes-level function used to visualize the frequency (distribution) of observations in a categorical variable.
+
+
+While a histogram groups continuous numbers into bins, a countplot automatically counts how many times each unique category (like "Fraud" vs. "Not Fraud" or "Class A" vs. "Class B") appears and represents that count with a bar. 
+
+We use countplots when we want to quickly see which categories are the most or least common in our dataset.
+"""
+
+
+sns.countplot(
+    data = diamonds_data,
+
+    x = 'is_fraud?', # This is the categorical column being analyzed.
+    # Seaborn will automatically count how many "Yes" and "No" (or 1 and 0) entries are in this column and plot them on the x-axis.
+    
+    hue = 'is_fraud?', # assigning the x-variable to hue allows you to apply a color palette across the bars without triggering a deprecation warning.
+
+    palette = 'mako', # Applies a sequential color scheme. 
+    # This gives each bar a distinct color from the theme
+
+    legend = False, # Disables the color legend.
+    # Since the x-axis labels already explain what each bar represents, a separate legend is redundant.
+
+    ax = axes[0]
+)
+
+axes[0].set_title("Class Imbalance (The Fraud Trap)")
+
+axes[0].set_ylabel("Count of Transactions")
+
+axes[0].set_xlabel("Diamond Price Classes")
+
+
+for bar in axes[0].patches:
+
+    bar_height = bar.get_height() # bar.get_height() retrieves the count of the bar
+
+    axes[0].text(
+        x = bar.get_x() + bar.get_width()/2, # calculates the horizontal center of the bar.
+
+        y = bar_height + 50, # places the text exactly 50 units above the top of the bar
+
+        s = f"{bar_height}", # converts the numeric height into a string to be displayed.
+
+        ha = 'center' #  ensures the text is centered over the calculated x coordinate.
+    )
+
+"""
+If you train a model here, it will ignore the 'Suspicious' class entirely.
+
+You MUST use SMOTE or Class Weights to fix this before training.
+"""
+
+
+
+
+
+
+# ===================================== SORTING AND ORDERING (PARETO PRINCIPLE) =====================================
+
+# Seaborn sorts categories alphabetically by default.
+# We prevent this by inputing our own custom order in .countplot(), calculated through using .value_counts() to obtain the sorting of categories by count descending
+
+
+cut_order = diamonds_data['cut'].value_counts().index
+
+sns.countplot(
+    data = diamonds_data,
+    x = "cut",
+    hue = 'cut',
+    legend = False,
+    palette = 'Spectral',
+    ax = axes[1],
+    order = cut_order # this forces the x-axis to follow our custom sorted list.
+    # You can immediately see the most common category
+    # using alphabetical sorting would bury insights
+)
+
+axes[1].set_title("Diamond Cuts (Sorted by Frequency)")
+
+plt.tight_layout()
+
+plt.show()
+
+
+
+
+
+
+
+
+

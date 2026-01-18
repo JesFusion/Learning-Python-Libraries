@@ -25,6 +25,23 @@
 },
 
 {
+    Types of Skew and their fixes:
+
+
+    - Right Skew (Positive Skew): 
+    
+    The tail extends to the right (e.g., Jeff Bezos walking into a bar; the average income skyrockets, but the median stays low).
+
+    The Fix: Log Transformation. It squeezes the long tail back toward the center.
+
+    - Left Skew (Negative Skew):
+    
+    The tail extends to the left (e.g., age at death; most are old, a few are young).
+
+    The Fix: Power Transformations (Square/Cube) or Box-Cox.
+},
+
+{
     To test for normality, we use stats.probplot(). Most important parameters are:
 
 
@@ -55,4 +72,8 @@
     vi. fit:
     
     A boolean (default True). If True, the function calculates a least-squares regression best-fit line for the data.
+},
+
+{
+    We use techniques like SMOTE (Synthetic Minority Over-sampling Technique) or Class Weights on Categorial datasets to fix class imbalance before training our Model
 }
